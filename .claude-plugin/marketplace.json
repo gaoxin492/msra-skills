@@ -1,0 +1,16 @@
+{
+  "name": "msra-skills-marketplace",
+  "owner": {
+    "name": "gaoxin492"
+  },
+  "plugins": [
+    {
+      "name": "msra-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/gaoxin492/msra-skills.git"
+      },
+      "homepage": "https://github.com/gaoxin492/msra-skills"
+    }
+  ]
+}
