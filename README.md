@@ -1,49 +1,72 @@
-# MSRA Skills Plugin for Claude Code
+# MSRA Skills — Claude Code Plugin
 
-A comprehensive Claude Code plugin that bundles server management and Azure Blob storage tools, designed for researchers and engineers working with AzureML / K8S clusters and remote servers.
-
----
-
-## What is This?
-
-**msra-skills** is a **Claude Code Plugin** — a collection of specialized skills that extend Claude Code's capabilities for infrastructure and DevOps tasks. Once installed, Claude can automatically:
-
-- **Log into remote servers** (SSH, AzureML WSS, Dev Tunnel) with multi-layer failover
-- **Manage Azure Blob storage** (mount, upload, download, SAS token rotation)
-- **Monitor GPU utilization** and cluster health
-- **Deploy and self-heal tunnels** for persistent remote access
-- **Guide you through onboarding new servers** step by step
+> Making daily work at MSRA easier — especially cluster training, data management, and server operations.
 
 ---
 
-## Skills Included
+## Philosophy
 
-| Skill | Trigger Keywords | Description |
-|-------|-----------------|-------------|
-| **server-manager** | server, cluster, GPU, login, tunnel, SSH | Full server lifecycle management: login via SSH/WSS/DevTunnel, status checks, GPU monitoring, tunnel deployment with watchdog auto-recovery. Supports direct SSH servers (Raspberry Pi, VPS, etc.) and complex AzureML/K8S clusters. |
-| **blob-manager** | blob, SAS token, remount, azcopy, upload, download | Azure Blob storage operations: BlobFuse mount/remount, AzCopy high-speed transfers (~5 MB/s), Python SDK for listing/metadata, SAS token lifecycle management with 7-day expiry alerts. |
+Working at MSRA means juggling AzureML clusters, K8S pods, GPU monitoring, Blob storage, SAS tokens, multi-node SSH access, and countless DevOps chores that eat into research time. **msra-skills** is a Claude Code Plugin built to handle all of that for you.
+
+The goal is simple: **let researchers focus on research, not infrastructure.**
+
+We currently ship two skills — **Server Manager** and **Blob Manager** — but this is an open, extensible plugin. New skills can be added anytime as new pain points emerge (experiment tracking, job scheduling, log analysis, etc.). If it's a repetitive ops task at MSRA, it belongs here.
+
+---
+
+## What Can It Do?
+
+Once installed, just talk to Claude naturally. The right skill activates automatically:
+
+- *"帮我登录 b0"* → SSH into cluster B node 0 (with 4-layer failover)
+- *"查一下所有集群 GPU 利用率"* → Health check across all nodes
+- *"SAS token 过期了，重新挂载 blob"* → Batch BlobFuse remount on all servers
+- *"上传这个文件到 blob"* → AzCopy high-speed transfer
+- *"帮我上线一台新服务器"* → Guided onboarding with tunnel deployment
+
+---
+
+## Current Skills
+
+| Skill | What It Does |
+|-------|-------------|
+| **server-manager** | Server login (SSH / WSS / DevTunnel), status checks, GPU monitoring, tunnel deployment & self-healing watchdog. Supports direct SSH, AzureML clusters, and K8S pods. |
+| **blob-manager** | Azure Blob storage: BlobFuse mount/remount, AzCopy transfers (~5 MB/s), Python SDK operations, SAS token lifecycle management. |
+
+> 💡 More skills coming — contributions welcome!
 
 ---
 
 ## Installation
 
-### Method 1: As a Plugin (Recommended)
-
-This installs all skills at once under the `msra-skills:` namespace.
+### Method 1: Plugin Install via CLI (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude plugin install /path/to/msra-skills
+```
 
-# Launch Claude Code with the plugin
+Or clone first, then install:
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude plugin install ~/.claude/plugins/msra-skills
+```
+
+### Method 2: Git Clone + Plugin Directory
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+```
+
+Then launch Claude Code — it auto-discovers plugins in `~/.claude/plugins/`.
+
+Or load explicitly:
+
+```bash
 claude --plugin-dir ~/.claude/plugins/msra-skills
 ```
 
-After loading, skills are available as:
-- `msra-skills:server-manager` — triggered automatically when you mention servers, clusters, GPU, etc.
-- `msra-skills:blob-manager` — triggered automatically when you mention blob, SAS token, remount, etc.
-
-### Method 2: As Standalone Skills
+### Method 3: As Standalone Skills
 
 If you prefer shorter skill names (without the `msra-skills:` prefix):
 
@@ -53,28 +76,29 @@ cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
 cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
 ```
 
-Skills are then available as `/server-manager` and `/blob-manager`.
+### Method 4: Project-Level (Team Sharing)
 
-### Method 3: Direct Path Loading
-
-If you don't want to move files:
+Add to a project repo so your whole team gets the skills via Git:
 
 ```bash
-claude --plugin-dir /path/to/msra-skills
+# Inside your project root
+git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
+cp -r /tmp/msra-skills/skills/ .claude/skills/
+git add .claude/skills/
 ```
 
 ---
 
 ## First-Time Setup
 
-After installation, Claude will **automatically guide you** through initial configuration when you first use any skill. Here's what to expect:
+After installation, Claude will **automatically guide you** through initial configuration. It will ask about your servers, clusters, and credentials, then configure everything for you.
 
-### Server Manager Setup
+### Server Manager
 
-1. **Claude asks what servers you have** — direct SSH (Pi, VPS), AzureML clusters, or K8S pods
-2. **You provide connection info** — IPs, usernames, job names, subscriptions, etc.
-3. **Claude configures scripts** — updates `scripts/s`, `scripts/t`, `scripts/s-check` automatically
-4. **Symlink helper scripts to PATH**:
+1. Claude asks what servers you have (direct SSH, AzureML, K8S)
+2. You provide connection info (IPs, usernames, job names, subscriptions)
+3. Claude configures the login scripts automatically
+4. Symlink helper scripts to your PATH:
    ```bash
    mkdir -p ~/.local/bin
    SKILL_DIR="$HOME/.claude/plugins/msra-skills/skills/server-manager"
@@ -83,58 +107,47 @@ After installation, Claude will **automatically guide you** through initial conf
    done
    export PATH="$HOME/.local/bin:$PATH"  # add to .zshrc / .bashrc
    ```
-5. **Install Dev Tunnel CLI** (for AzureML users):
+5. Install Dev Tunnel CLI (for AzureML users):
    ```bash
-   # macOS ARM
    curl -sSL https://aka.ms/TunnelsCliDownload/osx-arm64-zip -o /tmp/devtunnel.zip
    unzip -o /tmp/devtunnel.zip -d ~/.local/bin/
    devtunnel user login --github
    ```
 
-### Blob Manager Setup
+### Blob Manager
 
-1. **Create a SAS config file** at `~/.claude/skills/blob-manager/blob_sas.json`:
-   ```json
-   {
-     "container_url": "https://YOUR_ACCOUNT.blob.core.windows.net/YOUR_CONTAINER?sv=...&sig=...",
-     "account": "YOUR_ACCOUNT",
-     "container": "YOUR_CONTAINER",
-     "expires": "2026-05-05T07:45:00Z"
-   }
-   ```
-2. **Edit `scripts/run_remount_all.sh`** to set your cluster aliases (used for batch BlobFuse remount)
-3. **Install dependencies**:
-   ```bash
-   pip install azure-storage-blob
-   # azcopy should be installed locally for large file transfers
-   ```
+1. Create `blob_sas.json` with your Azure SAS token
+2. Install dependencies: `pip install azure-storage-blob`
+3. (Optional) Install `azcopy` for large file transfers
+
+See each skill's `SKILL.md` for detailed documentation.
 
 ---
 
-## What Each Skill Can Do
+## Skill Details
 
 ### Server Manager
 
-| Feature | Command / Action | Details |
-|---------|-----------------|---------|
-| **SSH Login** | `s <alias>` | Connect via AzureML WSS relay (through jumpbox) |
-| **Dev Tunnel Login** | `t <alias>` | Fast direct connection bypassing WSS relay |
-| **Tunnel Status** | `t status` | Check if Dev Tunnels are online |
-| **Health Check** | `s check` | Full cluster inspection (status + GPU) |
-| **GPU Check** | `s check gpu` | GPU utilization across all nodes |
-| **New Server Onboarding** | Guided workflow | Deploy Dev Tunnel + VS Code Tunnel + Watchdog |
-| **Auto-Failover** | Automatic | 4-layer fallback: DevTunnel → WSS → VS Code Tunnel → Happy App |
-| **Self-Healing** | Watchdog scripts | Auto-restart tunnels every 5 minutes on remote nodes |
+| Feature | Command | Details |
+|---------|---------|---------|
+| WSS Login | `s <alias>` | Connect via AzureML WSS relay through jumpbox |
+| Dev Tunnel | `t <alias>` | Fast direct connection bypassing WSS |
+| Health Check | `s check` | Status + GPU across all clusters |
+| GPU Monitor | `s check gpu` | GPU utilization on all nodes |
+| Tunnel Status | `t status` | Check Dev Tunnel online status |
+| New Server | Guided | Full onboarding: tunnel + watchdog deployment |
+| Auto-Failover | Automatic | DevTunnel → WSS → VS Code Tunnel → Happy App |
+| Self-Healing | Watchdog | Auto-restart dead tunnels every 5 min |
 
 ### Blob Manager
 
 | Feature | Tool | Details |
 |---------|------|---------|
-| **Large File Transfer** | AzCopy | ~5 MB/s multi-threaded upload/download |
-| **List / Browse** | Python SDK | List directories, check file sizes, read metadata |
-| **Small File I/O** | Python SDK | Upload/download small files, batch delete |
-| **BlobFuse Remount** | Shell script | Batch remount `/blob_old` on all cluster nodes after SAS expiry |
-| **SAS Token Management** | `blob_sas.json` | Store, update, and validate SAS tokens |
+| Large Transfers | AzCopy | ~5 MB/s multi-threaded upload/download |
+| List / Browse | Python SDK | Directories, file sizes, metadata |
+| Small File I/O | Python SDK | Upload, download, batch delete |
+| BlobFuse Remount | Shell script | Batch remount on all nodes after SAS expiry |
+| SAS Management | `blob_sas.json` | Store, update, validate SAS tokens |
 
 ---
 
@@ -143,37 +156,34 @@ After installation, Claude will **automatically guide you** through initial conf
 ```
 msra-skills/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest (name, version, author)
+│   └── plugin.json              # Plugin manifest
 ├── skills/
 │   ├── server-manager/
-│   │   ├── SKILL.md             # Full skill documentation & Claude instructions
-│   │   └── scripts/
-│   │       ├── s                # WSS login script
-│   │       ├── t                # Dev Tunnel login script
-│   │       ├── s-check          # Health check script
-│   │       ├── vscode-azml-proxy.sh   # VS Code AzureML SSH proxy
-│   │       ├── vscode-k8s-proxy.sh    # VS Code K8S SSH proxy
-│   │       └── remote/          # Watchdog scripts for deployment on servers
-│   │           ├── keep_tunnel.sh
-│   │           ├── keep_code_tunnel.sh
-│   │           └── keep_tunnel_loop.sh
+│   │   ├── SKILL.md             # Skill docs & Claude instructions
+│   │   └── scripts/             # Login, tunnel, health check scripts
 │   └── blob-manager/
-│       ├── SKILL.md             # Full skill documentation & Claude instructions
-│       └── scripts/
-│           ├── remount_blob_old.sh    # Per-node BlobFuse remount
-│           └── run_remount_all.sh     # Batch remount across all nodes
-├── README.md                    # This file (English)
-├── README_CN.md                 # Chinese version
+│       ├── SKILL.md             # Skill docs & Claude instructions
+│       └── scripts/             # BlobFuse remount scripts
+├── README.md                    # English
+├── README_CN.md                 # 中文
 └── .gitignore
 ```
+
+---
+
+## Contributing
+
+Have a repetitive task at MSRA? Turn it into a skill:
+
+1. Create `skills/your-skill-name/SKILL.md`
+2. Add any helper scripts under `skills/your-skill-name/scripts/`
+3. Submit a PR
 
 ---
 
 ## License
 
 MIT
-
----
 
 ## Author
 
