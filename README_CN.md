@@ -39,24 +39,40 @@
 
 ## 安装方法
 
-### 方式一：作为插件安装（推荐）
+### 方式一：`claude plugin install` 安装（推荐）
 
-将仓库 clone 到 Claude Code 插件目录，启动时自动识别：
+两条命令——先注册 marketplace，再安装插件：
 
 ```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+# 第一步：添加 marketplace（只需一次）
+claude plugin marketplace add gaoxin492/msra-skills
+
+# 第二步：安装插件
+claude plugin install msra-skills
 ```
 
 搞定。重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。
 
-> 也可以不移动文件，直接指定路径加载：
-> ```bash
-> claude --plugin-dir /path/to/msra-skills
-> ```
+后续更新：
 
-### 方式二：独立技能安装
+```bash
+claude plugin update msra-skills
+```
 
-如果你只需要某个技能，或者想要更短的名字（不带 `msra-skills:` 前缀）：
+### 方式二：`--plugin-dir` 临时加载
+
+不想永久安装，可以每次启动时指定路径：
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude --plugin-dir ~/.claude/plugins/msra-skills
+```
+
+> ⚠️ 每次启动 Claude Code 都需要带 `--plugin-dir` 参数。
+
+### 方式三：独立技能安装
+
+将单个技能复制到 `~/.claude/skills/`，Claude 会自动发现，无需 marketplace：
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
@@ -64,7 +80,9 @@ cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
 cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
 ```
 
-### 方式三：项目级安装（团队共享）
+技能名为 `/server-manager` 和 `/blob-manager`（更短，不带 `msra-skills:` 前缀）。
+
+### 方式四：项目级安装（团队共享）
 
 放到项目仓库里，团队通过 Git 自动获得这些技能：
 
@@ -144,7 +162,8 @@ git add .claude/skills/
 ```
 msra-skills/
 ├── .claude-plugin/
-│   └── plugin.json              # 插件清单
+│   ├── plugin.json              # 插件清单
+│   └── marketplace.json         # Marketplace 清单（用于 claude plugin install）
 ├── skills/
 │   ├── server-manager/
 │   │   ├── SKILL.md             # 技能文档和 Claude 指令

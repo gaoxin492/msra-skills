@@ -39,24 +39,40 @@ Once installed, just talk to Claude naturally. The right skill activates automat
 
 ## Installation
 
-### Method 1: As a Plugin (Recommended)
+### Method 1: `claude plugin install` (Recommended)
 
-Clone the repo into the Claude Code plugins directory — Claude auto-discovers it on launch:
+Two commands — register our repo as a marketplace, then install:
+
+```bash
+# Step 1: Add the marketplace (one-time setup)
+claude plugin marketplace add gaoxin492/msra-skills
+
+# Step 2: Install the plugin
+claude plugin install msra-skills
+```
+
+Done. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager` available.
+
+To update later:
+
+```bash
+claude plugin update msra-skills
+```
+
+### Method 2: `--plugin-dir` (Session-Only)
+
+Load the plugin for a single session without permanent installation:
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude --plugin-dir ~/.claude/plugins/msra-skills
 ```
 
-That's it. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager` available.
+> ⚠️ You need to pass `--plugin-dir` every time you launch Claude Code.
 
-> You can also load from any path without moving files:
-> ```bash
-> claude --plugin-dir /path/to/msra-skills
-> ```
+### Method 3: As Standalone Skills
 
-### Method 2: As Standalone Skills
-
-If you only need specific skills, or prefer shorter names (without the `msra-skills:` prefix):
+Copy individual skills into `~/.claude/skills/` — Claude auto-discovers them, no marketplace needed:
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
@@ -64,7 +80,9 @@ cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
 cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
 ```
 
-### Method 3: Project-Level (Team Sharing)
+Skills are available as `/server-manager` and `/blob-manager` (shorter names, no `msra-skills:` prefix).
+
+### Method 4: Project-Level (Team Sharing)
 
 Add to a project repo so your whole team gets the skills via Git:
 
@@ -144,7 +162,8 @@ See each skill's `SKILL.md` for detailed documentation.
 ```
 msra-skills/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest
+│   ├── plugin.json              # Plugin manifest
+│   └── marketplace.json         # Marketplace manifest (for claude plugin install)
 ├── skills/
 │   ├── server-manager/
 │   │   ├── SKILL.md             # Skill docs & Claude instructions
