@@ -39,36 +39,24 @@ Once installed, just talk to Claude naturally. The right skill activates automat
 
 ## Installation
 
-### Method 1: Plugin Install via CLI (Recommended)
+### Method 1: As a Plugin (Recommended)
 
-```bash
-claude plugin install /path/to/msra-skills
-```
-
-Or clone first, then install:
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
-claude plugin install ~/.claude/plugins/msra-skills
-```
-
-### Method 2: Git Clone + Plugin Directory
+Clone the repo into the Claude Code plugins directory — Claude auto-discovers it on launch:
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
 ```
 
-Then launch Claude Code — it auto-discovers plugins in `~/.claude/plugins/`.
+That's it. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager` available.
 
-Or load explicitly:
+> You can also load from any path without moving files:
+> ```bash
+> claude --plugin-dir /path/to/msra-skills
+> ```
 
-```bash
-claude --plugin-dir ~/.claude/plugins/msra-skills
-```
+### Method 2: As Standalone Skills
 
-### Method 3: As Standalone Skills
-
-If you prefer shorter skill names (without the `msra-skills:` prefix):
+If you only need specific skills, or prefer shorter names (without the `msra-skills:` prefix):
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
@@ -76,7 +64,7 @@ cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
 cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
 ```
 
-### Method 4: Project-Level (Team Sharing)
+### Method 3: Project-Level (Team Sharing)
 
 Add to a project repo so your whole team gets the skills via Git:
 

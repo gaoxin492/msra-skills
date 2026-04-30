@@ -39,36 +39,24 @@
 
 ## 安装方法
 
-### 方式一：CLI 命令安装（推荐）
+### 方式一：作为插件安装（推荐）
 
-```bash
-claude plugin install /path/to/msra-skills
-```
-
-或先 clone 再安装：
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
-claude plugin install ~/.claude/plugins/msra-skills
-```
-
-### 方式二：Git Clone 到插件目录
+将仓库 clone 到 Claude Code 插件目录，启动时自动识别：
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
 ```
 
-启动 Claude Code 后会自动发现 `~/.claude/plugins/` 下的插件。
+搞定。重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。
 
-也可以显式指定加载：
+> 也可以不移动文件，直接指定路径加载：
+> ```bash
+> claude --plugin-dir /path/to/msra-skills
+> ```
 
-```bash
-claude --plugin-dir ~/.claude/plugins/msra-skills
-```
+### 方式二：独立技能安装
 
-### 方式三：独立技能安装
-
-如果你只想用某个技能，或者不想带 `msra-skills:` 前缀：
+如果你只需要某个技能，或者想要更短的名字（不带 `msra-skills:` 前缀）：
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
@@ -76,7 +64,7 @@ cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
 cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
 ```
 
-### 方式四：项目级安装（团队共享）
+### 方式三：项目级安装（团队共享）
 
 放到项目仓库里，团队通过 Git 自动获得这些技能：
 
