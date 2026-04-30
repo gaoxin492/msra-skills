@@ -166,14 +166,9 @@ Blob Manager 自动化了整个续期流程：
 
 1. Claude 问你有哪些服务器（直连 SSH、AzureML、K8S）
 2. 你提供连接信息（IP、用户名、job 名、subscription 等）
-3. Claude 自动配置登录脚本
-4. 将辅助脚本链接到 PATH：
+3. Claude 将模板脚本复制到 `~/.local/bin/` 并填入你的集群信息
+4. 确保 `~/.local/bin` 在 PATH 中：
    ```bash
-   mkdir -p ~/.local/bin
-   SKILL_DIR="$HOME/.claude/plugins/msra-skills/skills/server-manager"
-   for script in s t s-check vscode-azml-proxy.sh vscode-k8s-proxy.sh; do
-     ln -sf "${SKILL_DIR}/scripts/${script}" ~/.local/bin/${script}
-   done
    export PATH="$HOME/.local/bin:$PATH"  # 加到 .zshrc 或 .bashrc
    ```
 5. 安装 Dev Tunnel CLI（AzureML 用户需要）：
@@ -185,7 +180,7 @@ Blob Manager 自动化了整个续期流程：
 
 ### Blob Manager
 
-1. 创建 `blob_sas.json`，填入你的 Azure SAS Token（也可以让 Claude 通过跳板机自动生成）
+1. 创建 `~/.config/msra-skills/blob_sas.json`，填入你的 Azure SAS Token（也可以让 Claude 通过跳板机自动生成）
 2. 安装依赖：`pip install azure-storage-blob`
 3. （可选）安装 `azcopy` 用于大文件传输
 

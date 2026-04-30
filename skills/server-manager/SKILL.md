@@ -30,23 +30,21 @@ server-manager/
 ### 首次安装
 
 ```bash
-# 1. 从模板创建你的个人配置（不会被 git pull 覆盖）
-SKILL_DIR="$HOME/.claude/plugins/msra-skills/skills/server-manager"
-cd "${SKILL_DIR}/scripts"
-cp s.example s
-cp t.example t
-cp s-check.example s-check
-chmod +x s t s-check
-
-# 2. 将脚本 symlink 到 PATH
+# 1. 从模板复制脚本到 ~/.local/bin/（个人配置，不受插件更新影响）
 mkdir -p ~/.local/bin
-SKILL_DIR="$HOME/.claude/skills/server-manager"
-for script in s t s-check vscode-azml-proxy.sh vscode-k8s-proxy.sh; do
-  ln -sf "${SKILL_DIR}/scripts/${script}" ~/.local/bin/${script}
-done
+SKILL_DIR="${CLAUDE_SKILL_DIR}"  # Claude 会自动设置这个变量
+cp "${SKILL_DIR}/scripts/s.example" ~/.local/bin/s
+cp "${SKILL_DIR}/scripts/t.example" ~/.local/bin/t
+cp "${SKILL_DIR}/scripts/s-check.example" ~/.local/bin/s-check
+cp "${SKILL_DIR}/scripts/vscode-azml-proxy.sh" ~/.local/bin/vscode-azml-proxy.sh
+cp "${SKILL_DIR}/scripts/vscode-k8s-proxy.sh" ~/.local/bin/vscode-k8s-proxy.sh
+chmod +x ~/.local/bin/s ~/.local/bin/t ~/.local/bin/s-check ~/.local/bin/vscode-azml-proxy.sh ~/.local/bin/vscode-k8s-proxy.sh
 
 # 2. 确保 ~/.local/bin 在 PATH 中（加到 .zshrc 或 .bashrc）
 export PATH="$HOME/.local/bin:$PATH"
+
+# 3. 创建配置目录
+mkdir -p ~/.config/msra-skills
 
 # 3. 安装 devtunnel CLI
 curl -sSL https://aka.ms/TunnelsCliDownload/osx-arm64-zip -o /tmp/devtunnel.zip

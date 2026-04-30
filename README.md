@@ -166,14 +166,9 @@ After installation, Claude will **automatically guide you** through initial conf
 
 1. Claude asks what servers you have (direct SSH, AzureML, K8S)
 2. You provide connection info (IPs, usernames, job names, subscriptions)
-3. Claude configures the login scripts automatically
-4. Symlink helper scripts to your PATH:
+3. Claude copies the template scripts to `~/.local/bin/` and fills in your cluster info
+4. Ensure `~/.local/bin` is in your PATH:
    ```bash
-   mkdir -p ~/.local/bin
-   SKILL_DIR="$HOME/.claude/plugins/msra-skills/skills/server-manager"
-   for script in s t s-check vscode-azml-proxy.sh vscode-k8s-proxy.sh; do
-     ln -sf "${SKILL_DIR}/scripts/${script}" ~/.local/bin/${script}
-   done
    export PATH="$HOME/.local/bin:$PATH"  # add to .zshrc / .bashrc
    ```
 5. Install Dev Tunnel CLI (for AzureML users):
@@ -185,7 +180,7 @@ After installation, Claude will **automatically guide you** through initial conf
 
 ### Blob Manager
 
-1. Create `blob_sas.json` with your Azure SAS token (or let Claude auto-generate one via the jumpbox)
+1. Create `~/.config/msra-skills/blob_sas.json` with your Azure SAS token (or let Claude auto-generate one via the jumpbox)
 2. Install dependencies: `pip install azure-storage-blob`
 3. (Optional) Install `azcopy` for large file transfers
 
