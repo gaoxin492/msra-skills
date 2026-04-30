@@ -16,22 +16,7 @@ We currently ship two skills, **Server Manager** and **Blob Manager**, but this 
 
 ## Installation
 
-### Method 1: Git Clone (Recommended)
-
-Clone the repo and load it as a plugin. This gives you full control and the simplest update experience.
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
-claude --plugin-dir ~/.claude/plugins/msra-skills
-```
-
-You need to pass `--plugin-dir` each time you launch Claude Code, or add it to your shell alias:
-
-```bash
-alias claude='claude --plugin-dir ~/.claude/plugins/msra-skills'
-```
-
-### Method 2: `claude plugin install`
+### Method 1: `claude plugin install` (Recommended)
 
 Register our repo as a marketplace, then install through the plugin system:
 
@@ -40,7 +25,22 @@ claude plugin marketplace add gaoxin492/msra-skills
 claude plugin install msra-skills
 ```
 
-Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`.
+Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`. No extra flags needed on every launch.
+
+### Method 2: Git Clone
+
+Clone the repo and load it as a plugin manually. Useful for development or if you want direct file access.
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude --plugin-dir ~/.claude/plugins/msra-skills
+```
+
+Note: you need to pass `--plugin-dir` each time, or set up a shell alias:
+
+```bash
+alias claude='claude --plugin-dir ~/.claude/plugins/msra-skills'
+```
 
 ### Method 3: As Standalone Skills
 
@@ -70,23 +70,23 @@ git add .claude/skills/
 
 Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored and will never be overwritten by updates.
 
-**Method 1 users** (git clone):
-
-```bash
-cd ~/.claude/plugins/msra-skills
-git pull
-```
-
-Pulls the latest docs, templates, and skill logic immediately. Your personal scripts and tokens stay untouched.
-
-**Method 2 users** (`claude plugin install`):
+**Method 1 users** (`claude plugin install`):
 
 ```bash
 claude plugin marketplace update msra-skills-marketplace
 claude plugin update msra-skills@local-msra
 ```
 
-This only triggers when the version in `plugin.json` has been bumped. For frequent small updates, consider switching to Method 1.
+Each release bumps the version in `plugin.json`, so this will pull the latest changes.
+
+**Method 2 users** (git clone):
+
+```bash
+cd ~/.claude/plugins/msra-skills
+git pull
+```
+
+Your personal scripts and tokens stay untouched either way.
 
 ---
 

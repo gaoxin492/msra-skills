@@ -16,22 +16,7 @@
 
 ## 安装方法
 
-### 方式一：Git Clone 安装（推荐）
-
-Clone 仓库后作为插件加载。更新最方便，对文件有完全控制。
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
-claude --plugin-dir ~/.claude/plugins/msra-skills
-```
-
-每次启动 Claude Code 需要带 `--plugin-dir` 参数，可以加到 shell alias 里：
-
-```bash
-alias claude='claude --plugin-dir ~/.claude/plugins/msra-skills'
-```
-
-### 方式二：`claude plugin install`
+### 方式一：`claude plugin install`（推荐）
 
 通过插件系统安装，先注册 marketplace 再安装：
 
@@ -40,7 +25,22 @@ claude plugin marketplace add gaoxin492/msra-skills
 claude plugin install msra-skills
 ```
 
-重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。
+重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。每次启动自动加载，不需要额外参数。
+
+### 方式二：Git Clone 安装
+
+手动 clone 后作为插件加载。适合开发调试或需要直接访问文件的场景。
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude --plugin-dir ~/.claude/plugins/msra-skills
+```
+
+注意：每次启动需要带 `--plugin-dir` 参数，可以设置 shell alias：
+
+```bash
+alias claude='claude --plugin-dir ~/.claude/plugins/msra-skills'
+```
 
 ### 方式三：独立技能安装
 
@@ -70,23 +70,23 @@ git add .claude/skills/
 
 个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖。
 
-**方式一用户**（git clone）：
-
-```bash
-cd ~/.claude/plugins/msra-skills
-git pull
-```
-
-立即拉取最新的文档、模板和技能逻辑。你的个人脚本和 token 不受影响。
-
-**方式二用户**（`claude plugin install`）：
+**方式一用户**（`claude plugin install`）：
 
 ```bash
 claude plugin marketplace update msra-skills-marketplace
 claude plugin update msra-skills@local-msra
 ```
 
-只有 `plugin.json` 中的版本号 bump 后才会触发更新。如果需要频繁获取最新改动，建议切换到方式一。
+每次发布都会 bump `plugin.json` 中的版本号，所以这两条命令会拉取最新改动。
+
+**方式二用户**（git clone）：
+
+```bash
+cd ~/.claude/plugins/msra-skills
+git pull
+```
+
+无论哪种方式，你的个人脚本和 token 都不受影响。
 
 ---
 
