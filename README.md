@@ -14,6 +14,82 @@ We currently ship two skills, **Server Manager** and **Blob Manager**, but this 
 
 ---
 
+## Installation
+
+### Method 1: Git Clone (Recommended)
+
+Clone the repo and load it as a plugin. This gives you full control and the simplest update experience.
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude --plugin-dir ~/.claude/plugins/msra-skills
+```
+
+You need to pass `--plugin-dir` each time you launch Claude Code, or add it to your shell alias:
+
+```bash
+alias claude='claude --plugin-dir ~/.claude/plugins/msra-skills'
+```
+
+### Method 2: `claude plugin install`
+
+Register our repo as a marketplace, then install through the plugin system:
+
+```bash
+claude plugin marketplace add gaoxin492/msra-skills
+claude plugin install msra-skills
+```
+
+Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`.
+
+### Method 3: As Standalone Skills
+
+Copy individual skills into `~/.claude/skills/`. Claude auto-discovers them, no marketplace needed:
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
+cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
+cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
+```
+
+Skills are available as `/server-manager` and `/blob-manager` (shorter names, no `msra-skills:` prefix).
+
+### Method 4: Project-Level (Team Sharing)
+
+Add to a project repo so your whole team gets the skills via Git:
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
+cp -r /tmp/msra-skills/skills/ .claude/skills/
+git add .claude/skills/
+```
+
+---
+
+## Updating
+
+Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored and will never be overwritten by updates.
+
+**Method 1 users** (git clone):
+
+```bash
+cd ~/.claude/plugins/msra-skills
+git pull
+```
+
+Pulls the latest docs, templates, and skill logic immediately. Your personal scripts and tokens stay untouched.
+
+**Method 2 users** (`claude plugin install`):
+
+```bash
+claude plugin marketplace update msra-skills-marketplace
+claude plugin update msra-skills@local-msra
+```
+
+This only triggers when the version in `plugin.json` has been bumped. For frequent small updates, consider switching to Method 1.
+
+---
+
 ## What Can It Do?
 
 Once installed, just talk to Claude naturally. The right skill activates automatically:
@@ -26,7 +102,7 @@ Once installed, just talk to Claude naturally. The right skill activates automat
 
 ---
 
-## Current Skills
+## Skill Details
 
 ### Server Manager
 
@@ -82,58 +158,6 @@ For file transfers between your local machine and Blob storage, it supports:
 
 ---
 
-## Installation
-
-### Method 1: `claude plugin install` (Recommended)
-
-Register our repo as a marketplace, then install:
-
-```bash
-# Step 1: Add the marketplace (one-time)
-claude plugin marketplace add gaoxin492/msra-skills
-
-# Step 2: Install the plugin
-claude plugin install msra-skills
-```
-
-Done. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`.
-
-### Method 2: Git Clone (Recommended for frequent updates)
-
-Load the plugin for a single session without permanent installation:
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
-claude --plugin-dir ~/.claude/plugins/msra-skills
-```
-
-To update, just `git pull` inside the cloned directory. You need to pass `--plugin-dir` every time you launch Claude Code.
-
-### Method 3: As Standalone Skills
-
-Copy individual skills into `~/.claude/skills/`. Claude auto-discovers them, no marketplace needed:
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
-cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
-cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
-```
-
-Skills are available as `/server-manager` and `/blob-manager` (shorter names, no `msra-skills:` prefix).
-
-### Method 4: Project-Level (Team Sharing)
-
-Add to a project repo so your whole team gets the skills via Git:
-
-```bash
-# Inside your project root
-git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
-cp -r /tmp/msra-skills/skills/ .claude/skills/
-git add .claude/skills/
-```
-
----
-
 ## First-Time Setup
 
 After installation, Claude will **automatically guide you** through initial configuration. It will ask about your servers, clusters, and credentials, then configure everything for you.
@@ -166,33 +190,6 @@ After installation, Claude will **automatically guide you** through initial conf
 3. (Optional) Install `azcopy` for large file transfers
 
 See each skill's `SKILL.md` for detailed documentation.
-
----
-
-## Updating
-
-Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored and will never be overwritten by updates.
-
-**If you installed via Method 1** (`claude plugin install`):
-
-```bash
-# Refresh the marketplace index first
-claude plugin marketplace update msra-skills-marketplace
-
-# Then update the plugin
-claude plugin update msra-skills@local-msra
-```
-
-> Note: this only triggers when the version in `plugin.json` has been bumped.
-
-**If you installed via Method 2** (git clone):
-
-```bash
-cd ~/.claude/plugins/msra-skills
-git pull
-```
-
-This updates documentation, templates, and skill logic. Your personal scripts and tokens stay untouched.
 
 ---
 
@@ -229,8 +226,12 @@ Have a repetitive task at MSRA? Turn it into a skill:
 
 ## License
 
-MIT
+MIT License
 
-## Author
+Copyright (c) 2026 gaoxin492
 
-**gaoxin492** — [GitHub](https://github.com/gaoxin492/msra-skills)
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -14,6 +14,82 @@
 
 ---
 
+## 安装方法
+
+### 方式一：Git Clone 安装（推荐）
+
+Clone 仓库后作为插件加载。更新最方便，对文件有完全控制。
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
+claude --plugin-dir ~/.claude/plugins/msra-skills
+```
+
+每次启动 Claude Code 需要带 `--plugin-dir` 参数，可以加到 shell alias 里：
+
+```bash
+alias claude='claude --plugin-dir ~/.claude/plugins/msra-skills'
+```
+
+### 方式二：`claude plugin install`
+
+通过插件系统安装，先注册 marketplace 再安装：
+
+```bash
+claude plugin marketplace add gaoxin492/msra-skills
+claude plugin install msra-skills
+```
+
+重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。
+
+### 方式三：独立技能安装
+
+将单个技能复制到 `~/.claude/skills/`，Claude 会自动发现，无需 marketplace：
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
+cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
+cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
+```
+
+技能名为 `/server-manager` 和 `/blob-manager`（更短，不带 `msra-skills:` 前缀）。
+
+### 方式四：项目级安装（团队共享）
+
+放到项目仓库里，团队通过 Git 自动获得这些技能：
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
+cp -r /tmp/msra-skills/skills/ .claude/skills/
+git add .claude/skills/
+```
+
+---
+
+## 更新
+
+个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖。
+
+**方式一用户**（git clone）：
+
+```bash
+cd ~/.claude/plugins/msra-skills
+git pull
+```
+
+立即拉取最新的文档、模板和技能逻辑。你的个人脚本和 token 不受影响。
+
+**方式二用户**（`claude plugin install`）：
+
+```bash
+claude plugin marketplace update msra-skills-marketplace
+claude plugin update msra-skills@local-msra
+```
+
+只有 `plugin.json` 中的版本号 bump 后才会触发更新。如果需要频繁获取最新改动，建议切换到方式一。
+
+---
+
 ## 能做什么？
 
 安装后只需跟 Claude 自然对话，对应的 skill 会自动触发：
@@ -26,7 +102,7 @@
 
 ---
 
-## 当前技能
+## 技能详情
 
 ### Server Manager — 服务器大管家
 
@@ -82,58 +158,6 @@ Blob Manager 自动化了整个续期流程：
 
 ---
 
-## 安装方法
-
-### 方式一：`claude plugin install` 安装（推荐）
-
-先注册 marketplace，再安装插件：
-
-```bash
-# 第一步：添加 marketplace（只需一次）
-claude plugin marketplace add gaoxin492/msra-skills
-
-# 第二步：安装插件
-claude plugin install msra-skills
-```
-
-搞定。重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。
-
-### 方式二：Git Clone 安装（推荐，方便更新）
-
-不想永久安装，可以每次启动时指定路径：
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-skills
-claude --plugin-dir ~/.claude/plugins/msra-skills
-```
-
-更新时在 clone 的目录里 `git pull` 即可。每次启动 Claude Code 都需要带 `--plugin-dir` 参数。
-
-### 方式三：独立技能安装
-
-将单个技能复制到 `~/.claude/skills/`，Claude 会自动发现，无需 marketplace：
-
-```bash
-git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
-cp -r /tmp/msra-skills/skills/server-manager ~/.claude/skills/
-cp -r /tmp/msra-skills/skills/blob-manager ~/.claude/skills/
-```
-
-技能名为 `/server-manager` 和 `/blob-manager`（更短，不带 `msra-skills:` 前缀）。
-
-### 方式四：项目级安装（团队共享）
-
-放到项目仓库里，团队通过 Git 自动获得这些技能：
-
-```bash
-# 在你的项目根目录
-git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
-cp -r /tmp/msra-skills/skills/ .claude/skills/
-git add .claude/skills/
-```
-
----
-
 ## 首次配置
 
 安装后首次使用时，Claude 会 **自动引导你** 完成配置，问你有哪些服务器、连接信息等，然后帮你配好一切。
@@ -169,33 +193,6 @@ git add .claude/skills/
 
 ---
 
-## 更新
-
-个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖。
-
-**方式一安装的用户**（`claude plugin install`）：
-
-```bash
-# 先刷新 marketplace 索引
-claude plugin marketplace update msra-skills-marketplace
-
-# 再更新插件
-claude plugin update msra-skills@local-msra
-```
-
-> 注意：只有 `plugin.json` 中的版本号 bump 后才会触发更新。
-
-**方式二安装的用户**（git clone）：
-
-```bash
-cd ~/.claude/plugins/msra-skills
-git pull
-```
-
-只更新文档、模板和技能逻辑，你的个人脚本和 token 不受影响。
-
----
-
 ## 项目结构
 
 ```
@@ -227,10 +224,14 @@ msra-skills/
 
 ---
 
-## 许可证
+## License
 
-MIT
+MIT License
 
-## 作者
+Copyright (c) 2026 gaoxin492
 
-**gaoxin492** — [GitHub](https://github.com/gaoxin492/msra-skills)
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
