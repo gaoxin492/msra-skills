@@ -68,16 +68,16 @@ git add .claude/skills/
 
 ## 更新
 
-个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖。
+个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）在插件目录之外，不会被更新覆盖。
 
 **方式一用户**（`claude plugin install`）：
 
 ```bash
 claude plugin marketplace update msra-skills-marketplace
-claude plugin update msra-skills@local-msra
+claude plugin update msra-skills@msra-skills-marketplace
 ```
 
-每次发布都会 bump `plugin.json` 中的版本号，所以这两条命令会拉取最新改动。
+重启 Claude Code 生效。
 
 **方式二用户**（git clone）：
 
@@ -85,8 +85,6 @@ claude plugin update msra-skills@local-msra
 cd ~/.claude/plugins/msra-skills
 git pull
 ```
-
-无论哪种方式，你的个人脚本和 token 都不受影响。
 
 ---
 
@@ -209,24 +207,76 @@ msra-skills/
 
 ---
 
-## 贡献
+## 开发者指南
 
-在 MSRA 有什么重复性运维操作？把它变成一个 skill：
+### 环境准备
 
-1. 创建 `skills/你的技能名/SKILL.md`
-2. 在 `skills/你的技能名/scripts/` 下放辅助脚本
-3. 提 PR
+将 repo clone 到一个工作目录（不是插件安装路径）：
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/Projects/msra-skills
+cd ~/Projects/msra-skills
+```
+
+日常使用可以同时通过 `claude plugin install` 安装。开发用的 clone 和安装的插件互不影响。
+
+### 修改内容
+
+| 改什么 | 在哪里 |
+|--------|--------|
+| Skill 行为 / Claude 指令 | `skills/<名称>/SKILL.md` |
+| 脚本模板 | `skills/<名称>/scripts/*.example` |
+| 辅助脚本（非个人配置） | `skills/<名称>/scripts/*.sh` |
+| 插件元数据 | `.claude-plugin/plugin.json` |
+| README | `README.md`、`README_CN.md` |
+
+### 发布
+
+改完后 bump 版本号然后 push：
+
+```bash
+# 1. 编辑 .claude-plugin/plugin.json，修改 "version"（如 "1.2.0" → "1.3.0"）
+
+# 2. 提交并推送
+git add -A
+git commit -m "feat: 描述你的改动"
+git push
+```
+
+用户就可以通过以下命令更新：
+
+```bash
+claude plugin marketplace update msra-skills-marketplace
+claude plugin update msra-skills@msra-skills-marketplace
+```
+
+版本号必须 bump，否则 `claude plugin update` 不会检测到变更。
+
+### 添加新技能
+
+1. 创建 `skills/技能名/SKILL.md`，在 YAML frontmatter 中写 `description` 字段
+2. 在 `skills/技能名/scripts/` 下放辅助脚本（含个人配置的用 `.example` 后缀）
+3. 如果有个人配置文件，在 `.gitignore` 中添加
+4. Bump `.claude-plugin/plugin.json` 中的版本号
+5. Push
+
+### 架构
+
+```
+插件目录（claude plugin install 管理，用户只读）
+  └── SKILL.md              ← Claude 读这个来了解能做什么
+  └── scripts/*.example     ← 个人脚本的模板
+  └── scripts/*.sh          ← 共享辅助脚本（非个人配置）
+
+~/.local/bin/（用户自己的，插件更新不会触碰）
+  └── s, t, s-check         ← 个人脚本，含集群凭据
+
+~/.config/msra-skills/（用户自己的）
+  └── blob_sas.json         ← SAS token
+```
 
 ---
 
 ## License
 
 MIT License
-
-Copyright (c) 2026 gaoxin492
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -68,16 +68,16 @@ git add .claude/skills/
 
 ## Updating
 
-Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored and will never be overwritten by updates.
+Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) live outside the plugin directory and will never be overwritten by updates.
 
 **Method 1 users** (`claude plugin install`):
 
 ```bash
 claude plugin marketplace update msra-skills-marketplace
-claude plugin update msra-skills@local-msra
+claude plugin update msra-skills@msra-skills-marketplace
 ```
 
-Each release bumps the version in `plugin.json`, so this will pull the latest changes.
+Restart Claude Code to apply.
 
 **Method 2 users** (git clone):
 
@@ -85,8 +85,6 @@ Each release bumps the version in `plugin.json`, so this will pull the latest ch
 cd ~/.claude/plugins/msra-skills
 git pull
 ```
-
-Your personal scripts and tokens stay untouched either way.
 
 ---
 
@@ -209,24 +207,78 @@ msra-skills/
 
 ---
 
-## Contributing
+## Developer Guide
 
-Have a repetitive task at MSRA? Turn it into a skill:
+### Setup
 
-1. Create `skills/your-skill-name/SKILL.md`
-2. Add any helper scripts under `skills/your-skill-name/scripts/`
-3. Submit a PR
+Clone the repo to a working directory (not the plugin install path):
+
+```bash
+git clone https://github.com/gaoxin492/msra-skills.git ~/Projects/msra-skills
+cd ~/Projects/msra-skills
+```
+
+You can also use `claude plugin install` normally for daily use. The dev clone and the installed plugin are independent.
+
+### Making Changes
+
+Edit SKILL.md, scripts, README, or add new skills. Key files:
+
+| What to change | Where |
+|----------------|-------|
+| Skill behavior / Claude instructions | `skills/<name>/SKILL.md` |
+| Script templates | `skills/<name>/scripts/*.example` |
+| Helper scripts (non-personal) | `skills/<name>/scripts/*.sh` |
+| Plugin metadata | `.claude-plugin/plugin.json` |
+| README | `README.md`, `README_CN.md` |
+
+### Publishing
+
+After making changes, bump the version and push:
+
+```bash
+# 1. Edit .claude-plugin/plugin.json, bump "version" (e.g. "1.2.0" → "1.3.0")
+
+# 2. Commit and push
+git add -A
+git commit -m "feat: describe your change"
+git push
+```
+
+That's it. Users can now update via:
+
+```bash
+claude plugin marketplace update msra-skills-marketplace
+claude plugin update msra-skills@msra-skills-marketplace
+```
+
+The version bump is required; without it, `claude plugin update` won't detect the change.
+
+### Adding a New Skill
+
+1. Create `skills/your-skill-name/SKILL.md` with a YAML frontmatter `description` field
+2. Add helper scripts under `skills/your-skill-name/scripts/` (use `.example` suffix for templates that contain user-specific config)
+3. Update `.gitignore` if the skill has personal config files
+4. Bump version in `.claude-plugin/plugin.json`
+5. Push
+
+### Architecture
+
+```
+Plugin directory (managed by claude plugin install, read-only for users)
+  └── SKILL.md              ← Claude reads this to know what it can do
+  └── scripts/*.example     ← Templates for personal scripts
+  └── scripts/*.sh          ← Shared helper scripts (non-personal)
+
+~/.local/bin/ (user's own, never touched by plugin updates)
+  └── s, t, s-check         ← Personal scripts with cluster credentials
+
+~/.config/msra-skills/ (user's own)
+  └── blob_sas.json         ← SAS token
+```
 
 ---
 
 ## License
 
 MIT License
-
-Copyright (c) 2026 gaoxin492
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
