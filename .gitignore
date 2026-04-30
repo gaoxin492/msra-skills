@@ -1,1 +1,9 @@
 .DS_Store
+
+# Personal config — these contain cluster credentials and tokens
+# Users create them by copying from *.example templates
+skills/server-manager/scripts/s
+skills/server-manager/scripts/t
+skills/server-manager/scripts/s-check
+blob_sas.json
+skills/*/blob_sas.json

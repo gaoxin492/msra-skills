@@ -130,6 +130,19 @@ git add .claude/skills/
 
 ---
 
+## 更新
+
+个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖：
+
+```bash
+cd ~/.claude/plugins/msra-skills
+git pull
+```
+
+只更新 SKILL.md 文档、README、模板等，你的个人脚本和 token 不受影响。
+
+---
+
 ## 技能详情
 
 ### Server Manager — 服务器大管家

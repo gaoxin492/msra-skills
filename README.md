@@ -130,6 +130,19 @@ See each skill's `SKILL.md` for detailed documentation.
 
 ---
 
+## Updating
+
+Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored, so updates are safe:
+
+```bash
+cd ~/.claude/plugins/msra-skills
+git pull
+```
+
+This updates SKILL.md docs, README, templates, etc. — your personal scripts and tokens are untouched.
+
+---
+
 ## Skill Details
 
 ### Server Manager

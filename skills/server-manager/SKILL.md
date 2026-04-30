@@ -30,7 +30,15 @@ server-manager/
 ### 首次安装
 
 ```bash
-# 1. 将脚本 symlink 到 PATH
+# 1. 从模板创建你的个人配置（不会被 git pull 覆盖）
+SKILL_DIR="$HOME/.claude/plugins/msra-skills/skills/server-manager"
+cd "${SKILL_DIR}/scripts"
+cp s.example s
+cp t.example t
+cp s-check.example s-check
+chmod +x s t s-check
+
+# 2. 将脚本 symlink 到 PATH
 mkdir -p ~/.local/bin
 SKILL_DIR="$HOME/.claude/skills/server-manager"
 for script in s t s-check vscode-azml-proxy.sh vscode-k8s-proxy.sh; do
