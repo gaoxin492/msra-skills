@@ -98,13 +98,7 @@ claude plugin install msra-skills
 
 Done. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`.
 
-To update later:
-
-```bash
-claude plugin update msra-skills
-```
-
-### Method 2: `--plugin-dir` (Session-Only)
+### Method 2: Git Clone (Recommended for frequent updates)
 
 Load the plugin for a single session without permanent installation:
 
@@ -113,7 +107,7 @@ git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-sk
 claude --plugin-dir ~/.claude/plugins/msra-skills
 ```
 
-> ⚠️ You need to pass `--plugin-dir` every time you launch Claude Code.
+To update, just `git pull` inside the cloned directory. You need to pass `--plugin-dir` every time you launch Claude Code.
 
 ### Method 3: As Standalone Skills
 
@@ -177,14 +171,28 @@ See each skill's `SKILL.md` for detailed documentation.
 
 ## Updating
 
-Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored, so updates are safe:
+Personal config files (`s`, `t`, `s-check`, `blob_sas.json`) are gitignored and will never be overwritten by updates.
+
+**If you installed via Method 1** (`claude plugin install`):
+
+```bash
+# Refresh the marketplace index first
+claude plugin marketplace update msra-skills-marketplace
+
+# Then update the plugin
+claude plugin update msra-skills@local-msra
+```
+
+> Note: this only triggers when the version in `plugin.json` has been bumped.
+
+**If you installed via Method 2** (git clone):
 
 ```bash
 cd ~/.claude/plugins/msra-skills
 git pull
 ```
 
-This updates documentation, templates, and skill logic. Your personal scripts and tokens are untouched.
+This updates documentation, templates, and skill logic. Your personal scripts and tokens stay untouched.
 
 ---
 

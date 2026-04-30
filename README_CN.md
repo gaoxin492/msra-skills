@@ -98,13 +98,7 @@ claude plugin install msra-skills
 
 搞定。重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。
 
-后续更新：
-
-```bash
-claude plugin update msra-skills
-```
-
-### 方式二：`--plugin-dir` 临时加载
+### 方式二：Git Clone 安装（推荐，方便更新）
 
 不想永久安装，可以每次启动时指定路径：
 
@@ -113,7 +107,7 @@ git clone https://github.com/gaoxin492/msra-skills.git ~/.claude/plugins/msra-sk
 claude --plugin-dir ~/.claude/plugins/msra-skills
 ```
 
-> ⚠️ 每次启动 Claude Code 都需要带 `--plugin-dir` 参数。
+更新时在 clone 的目录里 `git pull` 即可。每次启动 Claude Code 都需要带 `--plugin-dir` 参数。
 
 ### 方式三：独立技能安装
 
@@ -177,7 +171,21 @@ git add .claude/skills/
 
 ## 更新
 
-个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖：
+个人配置文件（`s`、`t`、`s-check`、`blob_sas.json`）已加入 gitignore，更新不会覆盖。
+
+**方式一安装的用户**（`claude plugin install`）：
+
+```bash
+# 先刷新 marketplace 索引
+claude plugin marketplace update msra-skills-marketplace
+
+# 再更新插件
+claude plugin update msra-skills@local-msra
+```
+
+> 注意：只有 `plugin.json` 中的版本号 bump 后才会触发更新。
+
+**方式二安装的用户**（git clone）：
 
 ```bash
 cd ~/.claude/plugins/msra-skills
