@@ -6,11 +6,11 @@
 
 ## Philosophy
 
-Working at MSRA means juggling AzureML clusters, K8S pods, GPU monitoring, Blob storage, SAS tokens, multi-node SSH access, and countless DevOps chores that eat into research time. **msra-skills** is a Claude Code Plugin built to handle all of that for you.
+Managing multiple clusters at MSRA involves a lot of tedious, repetitive work — SSH into the right node, check GPU status, rotate SAS tokens, remount Blob storage, set up tunnels, and so on. These tasks are perfect candidates for being packaged into skills and handed off to your local Claude Code.
 
-The goal is simple: **let researchers focus on research, not infrastructure.**
+With **msra-skills**, Claude keeps track of all your clusters, credentials, and configurations in one place. No more remembering which alias maps to which job, or manually SSHing into 10 nodes to remount storage. This significantly improves research efficiency, especially when you're juggling many clusters at once.
 
-We currently ship two skills — **Server Manager** and **Blob Manager** — but this is an open, extensible plugin. New skills can be added anytime as new pain points emerge (experiment tracking, job scheduling, log analysis, etc.). If it's a repetitive ops task at MSRA, it belongs here.
+We currently ship two skills — **Server Manager** and **Blob Manager** — but this is an open, extensible plugin. New skills can be added anytime as new needs emerge (experiment tracking, job scheduling, log analysis, etc.).
 
 ---
 
