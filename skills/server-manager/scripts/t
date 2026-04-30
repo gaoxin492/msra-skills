@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+# Terminal Tunnel 快捷登录脚本 - t <别名>
+# 通过 Microsoft Dev Tunnels 连接服务器，绕开 AzureML WSS relay
+# 依赖：~/.local/bin/devtunnel (已登录 GitHub)、~/.ssh/azml_id_rsa
+set -eo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+DEVTUNNEL="${HOME}/.local/bin/devtunnel"
+SSH_KEY="${HOME}/.ssh/azml_id_rsa"   # ← 改成你的 SSH 私钥路径
+LOGFILE="/tmp/devtunnel-client.log"
+
+# ══════════════════════════════════════
+# Tunnel ID 映射 — 每台服务器部署 devtunnel host 后在此注册
+# ══════════════════════════════════════
+get_tunnel_id() {
+    case "$1" in
+        # a0)  echo "your-tunnel-id.region" ;;
+        # b0)  echo "your-tunnel-id.region" ;;
+        *)   echo "" ;;
+    esac
+}
+
+get_user() {
+    case "$1" in
+        # AzureML 节点通常是 aiscuser
+        a0|a1|b0|b1) echo "aiscuser" ;;
+        # K8S 节点通常是 root
+        k0|k1|k2|k3) echo "root" ;;
+        *)            echo "aiscuser" ;;
+    esac
+}
+
+# 所有已配置的别名（空格分隔）
+ALL_ALIASES=""   # ← 填入已部署 tunnel 的别名，如 "a0 b0"
+
+show_list() {
+    echo -e "${BOLD}========== Terminal Tunnel 列表 ==========${NC}"
+    echo ""
+    echo -e "通过 Microsoft Dev Tunnels 直连服务器（不走 AzureML WSS）"
+    echo ""
+    if [ -z "$ALL_ALIASES" ]; then
+        echo -e "  ${YELLOW}(尚未配置任何 tunnel)${NC}"
+        echo ""
+        echo -e "  运行 ${CYAN}t setup${NC} 查看部署指南"
+    else
+        for alias in $ALL_ALIASES; do
+            local tid
+            tid=$(get_tunnel_id "$alias")
+            if [ -n "$tid" ]; then
+                echo -e "  ${GREEN}${alias}${NC}  -> ${tid}"
+            else
+                echo -e "  ${YELLOW}${alias}${NC}  -> (未部署)"
+            fi
+        done
+    fi
+    echo ""
+    echo -e "用法: ${CYAN}t <别名>${NC}    例如: t a0"
+    echo -e "      ${CYAN}t list${NC}      列出所有 tunnel"
+    echo -e "      ${CYAN}t status${NC}    检查 tunnel 在线状态"
+    echo -e "      ${CYAN}t setup${NC}     查看远端部署指南"
+    echo ""
+    echo -e "${YELLOW}Tunnel 不可用时用 ${CYAN}s <别名>${NC}${YELLOW} 走 WSS fallback${NC}"
+}
+
+check_deps() {
+    if [ ! -x "$DEVTUNNEL" ]; then
+        echo -e "${RED}devtunnel CLI 未安装。安装方法:${NC}"
+        echo '  curl -sSL https://aka.ms/TunnelsCliDownload/osx-arm64-zip -o /tmp/devtunnel.zip'
+        echo '  unzip -o /tmp/devtunnel.zip -d ~/.local/bin/'
+        echo '  chmod +x ~/.local/bin/devtunnel'
+        echo '  devtunnel user login --github'
+        exit 1
+    fi
+}
+
+check_status() {
+    check_deps
+    echo -e "${BOLD}检查 Tunnel 状态...${NC}"
+    local output
+    output=$("$DEVTUNNEL" list 2>&1)
+    for alias in $ALL_ALIASES; do
+        local tid
+        tid=$(get_tunnel_id "$alias")
+        if [ -z "$tid" ]; then
+            echo -e "  ${YELLOW}${alias}${NC}: 未部署"
+            continue
+        fi
+        local short_id="${tid%%.*}"
+        if echo "$output" | grep -q "$short_id"; then
+            local conns
+            conns=$(echo "$output" | grep "$short_id" | awk '{print $2}')
+            if [ "$conns" -gt 0 ] 2>/dev/null; then
+                echo -e "  ${GREEN}${alias}${NC}: 在线 (${tid}, ${conns} host connections)"
+            else
+                echo -e "  ${RED}${alias}${NC}: 离线 - host 未连接 (${tid})"
+            fi
+        else
+            echo -e "  ${RED}${alias}${NC}: tunnel 不存在 (${tid})"
+        fi
+    done
+}
+
+show_setup() {
+    cat <<'SETUP'
+===============================================
+  新服务器 Terminal Tunnel 部署指南
+===============================================
+
+1. 先用 s <别名> 登录服务器（WSS 方式）
+
+2. 在服务器上安装 devtunnel（放到持久存储）:
+   mkdir -p /blob/gaoxin/bin   # 或其他持久存储路径
+   curl -sSL https://aka.ms/TunnelsCliDownload/linux-x64 -o /blob/gaoxin/bin/devtunnel
+   chmod +x /blob/gaoxin/bin/devtunnel
+   /blob/gaoxin/bin/devtunnel user login -g -d
+   # -> 按提示在浏览器完成 GitHub 授权
+
+3. 创建固定 tunnel（ID 不会变）:
+   /blob/gaoxin/bin/devtunnel create --allow-anonymous
+   # 记录 Tunnel ID，如 xxx-yyy-zzz.region
+
+4. 添加 SSH 端口并启动:
+   /blob/gaoxin/bin/devtunnel port create <TUNNEL_ID> -p 22
+   nohup /blob/gaoxin/bin/devtunnel host <TUNNEL_ID> \
+     </dev/null >/tmp/devtunnel-host.log 2>&1 &
+   disown
+
+5. 部署 watchdog 自愈（可选但推荐）:
+   复制 scripts/remote/ 下的 keep_*.sh 到服务器 /blob/gaoxin/
+   修改 TUNNEL_ID 和 TUNNEL_NAME
+   nohup setsid bash /blob/gaoxin/keep_tunnel_loop.sh \
+     </dev/null >/tmp/keep_tunnel_loop.log 2>&1 & disown
+
+6. 在本地 Mac 上更新此脚本:
+   编辑 t 脚本，在 get_tunnel_id() 中添加:
+     别名) echo "<TUNNEL_ID>" ;;
+   并在 ALL_ALIASES 中添加别名
+
+7. 测试: t <别名>
+
+===============================================
+SETUP
+}
+
+connect_tunnel() {
+    local alias="$1"
+    local tid
+    tid=$(get_tunnel_id "$alias")
+    local user
+    user=$(get_user "$alias")
+
+    if [ -z "$tid" ]; then
+        echo -e "${RED}Tunnel '${alias}' 未部署。运行 ${CYAN}t setup${NC}${RED} 查看部署指南。${NC}"
+        echo -e "Fallback: ${CYAN}s ${alias}${NC}"
+        exit 1
+    fi
+
+    check_deps
+
+    echo -e "${CYAN}Connecting to ${BOLD}${alias}${NC}${CYAN} via Dev Tunnel (${tid})...${NC}"
+
+    rm -f "$LOGFILE"
+    "$DEVTUNNEL" connect "$tid" > "$LOGFILE" 2>&1 &
+    local dt_pid=$!
+
+    local port=""
+    for i in $(seq 1 20); do
+        sleep 0.5
+        if [ -f "$LOGFILE" ]; then
+            port=$(grep -oE "Forwarding from 127\.0\.0\.1:[0-9]+ to host port 22" "$LOGFILE" 2>/dev/null | head -1 | grep -oE '127\.0\.0\.1:[0-9]+' | cut -d: -f2 || true)
+            if [ -n "$port" ]; then
+                break
+            fi
+        fi
+    done
+
+    if [ -z "$port" ]; then
+        echo -e "${RED}Tunnel 连接超时。可能原因:${NC}"
+        echo "  - 远端 devtunnel host 未运行"
+        echo "  - devtunnel 未登录 (运行: devtunnel user login --github)"
+        echo "  - 网络问题"
+        echo ""
+        echo -e "日志: ${LOGFILE}"
+        [ -f "$LOGFILE" ] && tail -5 "$LOGFILE"
+        echo ""
+        echo -e "Fallback: ${CYAN}s ${alias}${NC}"
+        kill "$dt_pid" 2>/dev/null
+        wait "$dt_pid" 2>/dev/null
+        exit 1
+    fi
+
+    echo -e "${GREEN}Tunnel ready: localhost:${port} -> ${alias}:22${NC}"
+
+    ssh -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        -o LogLevel=ERROR \
+        -i "$SSH_KEY" \
+        "${user}@127.0.0.1" -p "$port"
+
+    kill "$dt_pid" 2>/dev/null
+    wait "$dt_pid" 2>/dev/null
+    echo -e "${CYAN}Tunnel 已断开。${NC}"
+}
+
+# ── 主逻辑 ──
+case "${1:-}" in
+    list|ls|"")
+        show_list
+        ;;
+    status)
+        check_status
+        ;;
+    setup)
+        show_setup
+        ;;
+    *)
+        tid=$(get_tunnel_id "$1")
+        if [ -n "$tid" ]; then
+            connect_tunnel "$1"
+        else
+            echo -e "${RED}Unknown server: $1${NC}"
+            echo ""
+            show_list
+            exit 1
+        fi
+        ;;
+esac

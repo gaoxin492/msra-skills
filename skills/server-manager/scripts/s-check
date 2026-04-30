@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# 服务器巡检脚本 - s check [status|gpu|all]
+# 并行检查所有服务器状态和 GPU 利用情况
+# 使用前请填写下方集群配置
+
+set -uo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m'
+
+TMPDIR=$(mktemp -d)
+trap "rm -rf $TMPDIR" EXIT
+
+# ══════════════════════════════════════
+# 集群配置 — 按需修改
+# ══════════════════════════════════════
+JUMPBOX="msra"
+
+# 格式: "别名|跳板机用户|job名|workspace|rg|subscription"
+# 一行一个集群，不需要的删掉
+CLUSTERS=(
+    # "a0|your_email@microsoft.com|your_job_name|your-workspace|your-rg|your-sub-id"
+    # "b0|your_email@microsoft.com|your_job_name|your-workspace|your-rg|your-sub-id"
+)
+
+# K8S pods（如果有）
+# K8S_NAMESPACE="reviewer-rl-dev"
+# K8S_PODS=("k0|pod-name-0" "k1|pod-name-1")
+
+# ══════════════════════════════════════
+
+check_status() {
+    echo -e "${BOLD}══════════ 服务器状态巡检 ══════════${NC}"
+    echo ""
+
+    if [ ${#CLUSTERS[@]} -eq 0 ]; then
+        echo -e "${YELLOW}  未配置任何集群。请编辑此脚本添加集群信息。${NC}"
+        return
+    fi
+
+    # 并行检查所有 AzureML 集群
+    for entry in "${CLUSTERS[@]}"; do
+        IFS='|' read -r alias user job ws rg sub <<< "$entry"
+        (
+            status=$(ssh -o ConnectTimeout=10 "$JUMPBOX" \
+                "sudo -u '${user}' bash -c 'az account set --subscription ${sub} 2>/dev/null && az ml job show --name ${job} --workspace-name ${ws} --resource-group ${rg} -o tsv --query status 2>/dev/null'" 2>/dev/null)
+            if [ -n "$status" ]; then
+                echo "$alias: $status"
+            else
+                echo "$alias: UNREACHABLE"
+            fi
+        ) > "$TMPDIR/$alias" 2>&1 &
+    done
+    wait
+
+    # 输出结果
+    for entry in "${CLUSTERS[@]}"; do
+        IFS='|' read -r alias _ _ _ _ _ <<< "$entry"
+        result=$(cat "$TMPDIR/$alias" 2>/dev/null)
+        if echo "$result" | grep -q "Running"; then
+            echo -e "  ${GREEN}✓${NC} $result"
+        elif echo "$result" | grep -q "UNREACHABLE"; then
+            echo -e "  ${RED}✗${NC} $result"
+        else
+            echo -e "  ${YELLOW}?${NC} $result"
+        fi
+    done
+    echo ""
+}
+
+check_gpu() {
+    echo -e "${BOLD}══════════ GPU 利用率巡检 ══════════${NC}"
+    echo ""
+    echo -e "${YELLOW}  GPU 巡检需要 SSH 连通，通过 WSS 代理执行 nvidia-smi。${NC}"
+    echo -e "${YELLOW}  请根据实际集群配置实现此函数。${NC}"
+    echo ""
+}
+
+case "${1:-all}" in
+    status)
+        check_status
+        ;;
+    gpu)
+        check_gpu
+        ;;
+    all)
+        check_status
+        check_gpu
+        ;;
+    *)
+        echo "Usage: s-check [status|gpu|all]"
+        exit 1
+        ;;
+esac

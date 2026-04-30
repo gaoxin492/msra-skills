@@ -1,0 +1,9 @@
+{
+  "name": "msra-skills",
+  "description": "MSRA 服务器管理、Blob 存储等运维工具集。Server Manager + Blob Manager for AzureML/K8S clusters.",
+  "version": "1.0.0",
+  "author": {
+    "name": "gaoxin492"
+  },
+  "repository": "https://github.com/gaoxin492/msra-skills"
+}
