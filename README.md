@@ -1,16 +1,16 @@
 # MSRA Skills — Claude Code Plugin
 
-> Making daily work at MSRA easier — especially cluster training, data management, and server operations.
+> A collection of Claude Code skills for cluster training, data management, and server operations at MSRA.
 
 ---
 
 ## Philosophy
 
-Managing multiple clusters at MSRA involves a lot of tedious, repetitive work — SSH into the right node, check GPU status, rotate SAS tokens, remount Blob storage, set up tunnels, and so on. These tasks are perfect candidates for being packaged into skills and handed off to your local Claude Code.
+Managing multiple clusters at MSRA involves a lot of tedious, repetitive work: logging into the right node, checking GPU status, rotating SAS tokens, remounting Blob storage, setting up tunnels, etc. These tasks are perfect candidates for packaging into skills and handing off to your local Claude Code.
 
-With **msra-skills**, Claude keeps track of all your clusters, credentials, and configurations in one place. No more remembering which alias maps to which job, or manually SSHing into 10 nodes to remount storage. This significantly improves research efficiency, especially when you're juggling many clusters at once.
+With **msra-skills**, Claude keeps track of all your clusters, credentials, and configurations in one place. You don't need to remember which alias maps to which job, or manually SSH into 10 nodes to remount storage. When you have many clusters, this makes a real difference in day-to-day research efficiency.
 
-We currently ship two skills — **Server Manager** and **Blob Manager** — but this is an open, extensible plugin. New skills can be added anytime as new needs emerge (experiment tracking, job scheduling, log analysis, etc.).
+We currently ship two skills, **Server Manager** and **Blob Manager**, but this is an open and extensible plugin. New skills can be added anytime as needs emerge (experiment tracking, job scheduling, log analysis, etc.).
 
 ---
 
@@ -18,9 +18,9 @@ We currently ship two skills — **Server Manager** and **Blob Manager** — but
 
 Once installed, just talk to Claude naturally. The right skill activates automatically:
 
-- *"帮我登录 b0"* → SSH into cluster B node 0 (with 4-layer failover)
+- *"帮我登录 b0"* → SSH into cluster B node 0 (with multi-layer failover)
 - *"查一下所有集群 GPU 利用率"* → Health check across all nodes
-- *"SAS token 过期了，重新挂载 blob"* → Batch BlobFuse remount on all servers
+- *"SAS token 过期了，重新挂载 blob"* → Auto-generate a new SAS token and batch remount
 - *"上传这个文件到 blob"* → AzCopy high-speed transfer
 - *"帮我上线一台新服务器"* → Guided onboarding with tunnel deployment
 
@@ -28,12 +28,57 @@ Once installed, just talk to Claude naturally. The right skill activates automat
 
 ## Current Skills
 
-| Skill | What It Does |
-|-------|-------------|
-| **server-manager** | Server login (SSH / WSS / DevTunnel), status checks, GPU monitoring, tunnel deployment & self-healing watchdog. Supports direct SSH, AzureML clusters, and K8S pods. |
-| **blob-manager** | Azure Blob storage: BlobFuse mount/remount, AzCopy transfers (~5 MB/s), Python SDK operations, SAS token lifecycle management. |
+### Server Manager
 
-> 💡 More skills coming — contributions welcome!
+Manages login, monitoring, and tunnel infrastructure for all your remote servers.
+
+AzureML clusters are typically accessed via `az ml job connect-ssh`, which routes through a **WSS (WebSocket) relay**. This works but can be slow (30+ second handshake) and suffers from known intermittent relay outages. To provide faster and more reliable access, Server Manager also deploys **tunnels** on each node:
+
+- **Dev Tunnel** provides direct SSH access from your terminal, bypassing the WSS relay entirely. This is the primary connection method and is also what allows Claude to manage your servers directly.
+- **VS Code Tunnel** lets you open a full VS Code editor in the browser, connected to the remote node. Useful when both WSS and Dev Tunnel are down, or when you want a GUI.
+
+Both tunnels are supervised by a **watchdog** process on the server that checks every 5 minutes and auto-restarts any dead tunnel.
+
+When connecting, Server Manager tries each method in order (Dev Tunnel → WSS → VS Code Tunnel) and automatically falls back if one fails.
+
+| Feature | Command | Details |
+|---------|---------|---------|
+| WSS Login | `s <alias>` | Connect via AzureML WSS relay through jumpbox |
+| Dev Tunnel Login | `t <alias>` | Fast direct SSH, bypasses WSS relay |
+| Health Check | `s check` | Job status + GPU utilization across all clusters |
+| GPU Monitor | `s check gpu` | GPU utilization on all nodes |
+| Tunnel Status | `t status` | Check which Dev Tunnels are online |
+| New Server Onboarding | Guided | Deploy Dev Tunnel + VS Code Tunnel + watchdog |
+| Self-Healing | Watchdog | Auto-restart dead tunnels every 5 min on remote nodes |
+
+Also supports direct SSH servers (Raspberry Pi, VPS, etc.) and K8S pods (via `kubectl exec` bridging).
+
+### Blob Manager
+
+Manages Azure Blob storage access for your training clusters.
+
+AzureML nodes typically mount Azure Blob containers as local directories using **BlobFuse**. This requires a valid **SAS token**, which expires every 7 days. When it expires, all mounts go stale and training jobs that try to write checkpoints can crash.
+
+Blob Manager automates the entire renewal cycle:
+
+1. **Generate a new SAS token** automatically via `az CLI` on the jumpbox (no need to open Azure Storage Explorer)
+2. **Batch remount** BlobFuse on all cluster nodes with a single command
+3. **Verify** the mount is working
+
+For file transfers between your local machine and Blob storage, it supports:
+
+- **AzCopy** for large files (multi-threaded, ~5 MB/s)
+- **Python SDK** (`azure-storage-blob`) for listing directories, reading metadata, and small file operations
+
+| Feature | Tool | Details |
+|---------|------|---------|
+| SAS Token Auto-Renewal | az CLI on jumpbox | Generate new token without Storage Explorer |
+| BlobFuse Remount | Shell script | Batch remount `/blob_old` on all nodes |
+| Large File Transfer | AzCopy | ~5 MB/s multi-threaded upload/download |
+| List / Browse | Python SDK | Directories, file sizes, metadata |
+| Small File I/O | Python SDK | Upload, download, batch delete |
+
+> 💡 More skills coming. Contributions welcome!
 
 ---
 
@@ -41,17 +86,17 @@ Once installed, just talk to Claude naturally. The right skill activates automat
 
 ### Method 1: `claude plugin install` (Recommended)
 
-Two commands — register our repo as a marketplace, then install:
+Register our repo as a marketplace, then install:
 
 ```bash
-# Step 1: Add the marketplace (one-time setup)
+# Step 1: Add the marketplace (one-time)
 claude plugin marketplace add gaoxin492/msra-skills
 
 # Step 2: Install the plugin
 claude plugin install msra-skills
 ```
 
-Done. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager` available.
+Done. Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`.
 
 To update later:
 
@@ -72,7 +117,7 @@ claude --plugin-dir ~/.claude/plugins/msra-skills
 
 ### Method 3: As Standalone Skills
 
-Copy individual skills into `~/.claude/skills/` — Claude auto-discovers them, no marketplace needed:
+Copy individual skills into `~/.claude/skills/`. Claude auto-discovers them, no marketplace needed:
 
 ```bash
 git clone https://github.com/gaoxin492/msra-skills.git /tmp/msra-skills
@@ -122,7 +167,7 @@ After installation, Claude will **automatically guide you** through initial conf
 
 ### Blob Manager
 
-1. Create `blob_sas.json` with your Azure SAS token
+1. Create `blob_sas.json` with your Azure SAS token (or let Claude auto-generate one via the jumpbox)
 2. Install dependencies: `pip install azure-storage-blob`
 3. (Optional) Install `azcopy` for large file transfers
 
@@ -139,34 +184,7 @@ cd ~/.claude/plugins/msra-skills
 git pull
 ```
 
-This updates SKILL.md docs, README, templates, etc. — your personal scripts and tokens are untouched.
-
----
-
-## Skill Details
-
-### Server Manager
-
-| Feature | Command | Details |
-|---------|---------|---------|
-| WSS Login | `s <alias>` | Connect via AzureML WSS relay through jumpbox |
-| Dev Tunnel | `t <alias>` | Fast direct connection bypassing WSS |
-| Health Check | `s check` | Status + GPU across all clusters |
-| GPU Monitor | `s check gpu` | GPU utilization on all nodes |
-| Tunnel Status | `t status` | Check Dev Tunnel online status |
-| New Server | Guided | Full onboarding: tunnel + watchdog deployment |
-| Auto-Failover | Automatic | DevTunnel → WSS → VS Code Tunnel → Happy App |
-| Self-Healing | Watchdog | Auto-restart dead tunnels every 5 min |
-
-### Blob Manager
-
-| Feature | Tool | Details |
-|---------|------|---------|
-| Large Transfers | AzCopy | ~5 MB/s multi-threaded upload/download |
-| List / Browse | Python SDK | Directories, file sizes, metadata |
-| Small File I/O | Python SDK | Upload, download, batch delete |
-| BlobFuse Remount | Shell script | Batch remount on all nodes after SAS expiry |
-| SAS Management | `blob_sas.json` | Store, update, validate SAS tokens |
+This updates documentation, templates, and skill logic. Your personal scripts and tokens are untouched.
 
 ---
 
