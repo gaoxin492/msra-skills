@@ -109,12 +109,38 @@ t setup         # 查看部署指南
 通过 AzureML 的 WSS relay 连接，首次握手 30+ 秒。
 
 ```bash
-s <别名>        # 登录服务器
+s <别名>        # 登录服务器（交互式）
 ```
 
 - AzureML WSS relay 有已知间歇性故障（[Issue #2423](https://github.com/microsoft/vscode-tools-for-ai/issues/2423)），可持续数小时
 - ⚠️ **不要让用户 cancel job**（会丢失计算资源）
 - **失败时** → 尝试 Layer 3
+
+#### WSS 编程式访问（Claude 必读）
+
+`s <别名>` 和 `az ml job connect-ssh` 都是**交互式**的，不支持直接传远程命令。但 Claude 可以通过 `vscode-azml-proxy.sh` 的原理，动态获取 WSS URL 后像普通 SSH 一样执行命令：
+
+```bash
+# 第 1 步：通过跳板机获取 WSS URL 和 connector 路径
+ssh_line=$(ssh -o ConnectTimeout=15 <JUMPBOX> "sudo -u '<USER>' bash -c 'cd ~ && az ml job connect-ssh \
+    --name <JOB> --node-index <NODE> --private-key-file-path ~/.ssh/id_rsa \
+    --workspace-name <WS> --resource-group <RG> --subscription <SUB> 2>&1 | grep ssh_command'" 2>/dev/null)
+
+WSS_URL=$(echo "$ssh_line" | grep -oE 'wss://[^ "]+' | head -n1)
+CONNECTOR=$(echo "$ssh_line" | grep -oE '/home/[^/]+/.azure/cliextensions/ml/azext_mlv2/manual/custom/_ssh_connector.py' | head -n1)
+
+# 第 2 步：通过 WSS 代理执行远程命令（像普通 SSH 一样）
+ssh -o StrictHostKeyChecking=no \
+    -o ProxyCommand="ssh -q <JUMPBOX> \"sudo -u '<USER>' /opt/az/bin/python3 ${CONNECTOR} ${WSS_URL}\"" \
+    -i <LOCAL_SSH_KEY> aiscuser@placeholder "<REMOTE_COMMAND>"
+```
+
+**关键点：**
+- WSS URL 是一次性的，每次需要重新获取（第 1 步）
+- `aiscuser@placeholder` 中的 hostname 是占位符，实际连接通过 ProxyCommand 建立
+- 本地 SSH 私钥路径（如 `~/.ssh/azml_id_rsa`）与跳板机上的不同
+- 这个方法**完全不需要 expect**，可以直接在脚本中使用
+- 当 Dev Tunnel 不可用时，这是 Claude 自动化执行远程命令的唯一方式
 
 ### Layer 3: VS Code Tunnel 浏览器终端
 
@@ -332,14 +358,19 @@ t status           # 检查 Dev Tunnel 状态
 
 ```
 1. 确认目标服务器别名
-2. 尝试 t <别名>（Dev Tunnel）       ← Claude 自己执行
-3. 失败 → 尝试 s <别名>（WSS）       ← Claude 自己执行
+2. 尝试 Dev Tunnel（手动构建 devtunnel connect + ssh）  ← Claude 自己执行
+3. 失败 → 尝试 WSS 编程式访问（动态获取 WSS URL + ssh ProxyCommand）← Claude 自己执行
 4. 失败 → 查 job 状态判断服务器是否存活：
    - 非 Running → 告知用户 job 已挂
    - Running → 说明是 relay 故障，继续降级：
 5. 让用户开 VS Code Tunnel            ← 给用户浏览器链接
 6. 也挂了 → 让用户用 Happy App        ← 给用户完整命令，让远程 Claude 执行
 ```
+
+**注意：`s <别名>` 和 `t <别名>` 都是交互式登录脚本，不支持传远程命令。** Claude 需要自动化执行命令时，应使用以下方式：
+
+- **Dev Tunnel 方式**：手动 `devtunnel connect <TUNNEL_ID>` 获取本地端口，再 `ssh -p <port> user@127.0.0.1 "command"`
+- **WSS 方式**：动态获取 WSS URL 后通过 ProxyCommand 执行（见「Layer 2 → WSS 编程式访问」章节）
 
 ### 新服务器上线
 

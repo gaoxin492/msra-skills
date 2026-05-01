@@ -279,6 +279,20 @@ Plugin directory (managed by claude plugin install, read-only for users)
 
 ---
 
+## Changelog
+
+### v1.4.0 (2026-05-01)
+
+**Server Manager**
+- **新增 WSS 编程式访问**：Claude 现在可以通过动态获取 WSS URL + SSH ProxyCommand 的方式直接在 AzureML 节点上执行命令，无需 expect、无需交互式会话。当 Dev Tunnel 不可用时，这是 Claude 自动化管理服务器的关键备用通道。
+- **更新连接诊断决策树**：明确区分交互式脚本（`s`/`t`）和编程式访问（devtunnel connect + ssh / WSS ProxyCommand），Claude 在自动化场景下会选择正确的方式。
+
+### v1.3.0
+
+- Initial public release with Server Manager and Blob Manager
+
+---
+
 ## License
 
 MIT License
