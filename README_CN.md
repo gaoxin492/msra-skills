@@ -23,7 +23,11 @@
 - 遵循顶会写作规范（ICLR/ICML/NeurIPS 风格）
 - 丰富的环境支持：彩色定理框、伪代码（algorithm2e）、LLM Prompt 框（含 JSON）、子图、booktabs 表格
 - 附录目录开关（`\appendixtoctrue` / `\appendixtocfalse`）
+- 自动检测并引导安装 LaTeX 环境
 - 自动编译（pdflatex + bibtex）
+
+**Server Manager**
+- **新增批量 SSH 端口迁移（22 → 2223）**：分步指南，涵盖 NSG 规则管理、sshd 配置、连通性验证。适用于公司安全策略要求关闭 22 端口的公网 VM。
 
 ### v1.4.0 (2026-05-01)
 

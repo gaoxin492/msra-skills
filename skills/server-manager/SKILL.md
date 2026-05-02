@@ -1,5 +1,5 @@
 ---
-description: "服务器大管家：管理本地和远程服务器的登录、状态巡检、Tunnel 部署与自愈。支持直连 SSH 服务器（树莓派、VPS 等）和复杂的 AzureML/K8S 集群。Trigger when: 用户提到服务器、集群、GPU、登录机器、训练机器，或问运维状态。"
+description: "服务器大管家：管理本地和远程服务器的登录、状态巡检、Tunnel 部署与自愈、SSH 端口迁移。支持直连 SSH 服务器（树莓派、VPS 等）和复杂的 AzureML/K8S 集群。Trigger when: 用户提到服务器、集群、GPU、登录机器、训练机器、端口迁移、SSH 端口、port 22、port 2223，或问运维状态。"
 ---
 
 # 服务器大管家
@@ -309,6 +309,141 @@ s check status     # 只查在线状态
 s check gpu        # 只查 GPU 利用率
 t status           # 检查 Dev Tunnel 状态
 ```
+
+---
+
+## VM SSH 端口迁移（22 → 2223）
+
+公司安全策略禁止开放 22 端口。对于有公网 IP 且直连 SSH 的 VM（如跳板机），需要将 SSH 迁移到 2223。
+
+> **注意**：AzureML 计算节点通常没有公网 IP，且通过 Dev Tunnel / WSS relay 连接，不受此影响。此流程主要针对直连 SSH 的 Azure VM。
+
+### 用户提供
+
+- **VM 名称**（如 `t2vg-a100-G4-13`）
+- **资源组**（如 `T2VG`）
+
+### 流程
+
+```
+1. 发现 NIC + Subnet 两层 NSG
+2. 检查并删除阻止 2223 的 Deny 规则
+3. 在两层 NSG 添加 2223 Allow 规则
+4. sshd_config 添加 Port 2223 并重启
+5. 验证 2223 连通
+6. 删除 Port 22（sshd + NSG）
+```
+
+### Step 1: 发现两层 NSG
+
+```bash
+# 获取 NIC 及其 NSG、子网信息
+az vm show -g <RG> -n <VM> --query "networkProfile.networkInterfaces[0].id" -o tsv | \
+  xargs -I{} az network nic show --ids {} --query "{nic:name, nicNsg:networkSecurityGroup.id, subnet:ipConfigurations[0].subnet.id}" -o json
+
+# 获取子网级 NSG
+az network vnet subnet show --ids <subnet_id> --query "networkSecurityGroup.id" -o tsv
+```
+
+两层 NSG 都必须放行，流量才能到达 VM。
+
+### Step 2: 检查并删除 Deny 规则
+
+对**每个** NSG 检查是否有 Deny 规则会阻止 2223：
+
+```bash
+az network nsg rule list -g <RG> --nsg-name <NSG_NAME> \
+  --query "[?access=='Deny' && (destinationPortRange=='2223' || destinationPortRange=='*' || contains(destinationPortRange, '2223'))]" -o table
+
+# 有则删除
+az network nsg rule delete -g <RG> --nsg-name <NSG_NAME> -n <RULE_NAME>
+```
+
+**必须先清 Deny 再加 Allow**——高优先级 Deny 会覆盖任何 Allow。
+
+### Step 3: 添加 2223 Allow 规则
+
+对每个 NSG：
+
+```bash
+# 检查是否已有
+az network nsg rule list -g <RG> --nsg-name <NSG_NAME> \
+  --query "[?destinationPortRange=='2223' && access=='Allow']" -o table
+
+# 没有则添加
+az network nsg rule create -g <RG> --nsg-name <NSG_NAME> \
+  -n ssh2223 --priority <UNUSED_PRIORITY> \
+  --access Allow --direction Inbound --protocol "*" \
+  --source-address-prefixes "*" --destination-port-ranges 2223
+```
+
+### Step 4: 配置 sshd
+
+```bash
+az vm run-command invoke -g <RG> -n <VM> --command-id RunShellScript --scripts "
+grep -q '^Port 2223' /etc/ssh/sshd_config || sed -i '/^#\?Port 22$/a Port 2223' /etc/ssh/sshd_config
+grep -n '^Port ' /etc/ssh/sshd_config
+systemctl restart sshd
+ss -tlnp | grep ssh
+"
+```
+
+### Step 5: 验证连通
+
+**有公网 IP 的 VM**：
+
+```bash
+az vm show -g <RG> -n <VM> --show-details --query publicIps -o tsv
+ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -p 2223 <PUBLIC_IP> "echo OK; hostname"
+```
+
+**无公网 IP 的 VM**（通过跳板机或 `az vm run-command` 验证）：
+
+```bash
+# 方式 A：从同 VNet 的跳板机测试
+ssh <jumpbox> "ssh -o ConnectTimeout=15 -p 2223 <PRIVATE_IP> 'echo OK; hostname'"
+
+# 方式 B：在 VM 内部确认 sshd 监听
+az vm run-command invoke -g <RG> -n <VM> --command-id RunShellScript --scripts "ss -tlnp | grep 2223"
+```
+
+收到响应（即使是 `Permission denied`）= 端口可达，可以继续。超时则回查 NSG 和 sshd。
+
+### Step 6: 删除 Port 22
+
+**确认 2223 可用后才执行。**
+
+```bash
+# 删除 sshd 中的 Port 22
+az vm run-command invoke -g <RG> -n <VM> --command-id RunShellScript --scripts "
+sed -i '/^Port 22$/d' /etc/ssh/sshd_config
+grep -n '^Port ' /etc/ssh/sshd_config
+systemctl restart sshd
+ss -tlnp | grep ssh
+"
+
+# 删除两个 NSG 中的 22 端口规则
+az network nsg rule list -g <RG> --nsg-name <NSG_NAME> \
+  --query "[?destinationPortRange=='22'].name" -o tsv
+az network nsg rule delete -g <RG> --nsg-name <NSG_NAME> -n <RULE_NAME>
+```
+
+### 迁移后更新本地配置
+
+端口迁移完成后，同步更新：
+
+- `~/.ssh/config` 中对应 Host 添加 `Port 2223`
+- `scripts/s` 中直连 SSH 的命令加 `-p 2223`
+
+### 常见错误
+
+| 错误 | 修复 |
+|------|------|
+| 只改了一层 NSG | 两层都必须放行 |
+| 没清 Deny 就加 Allow | 先删 Deny 再加 Allow |
+| 没验证就删 22 | 先确认 2223 通了再删 |
+| 忘了重启 sshd | `systemctl restart sshd` |
+| VM 无公网 IP 却用公网 IP 测 | 用跳板机或 `az vm run-command` 验证 |
 
 ---
 

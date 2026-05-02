@@ -13,32 +13,87 @@ description: "学术论文写作助手（Vibe Paper）：默认使用 Microsoft 
 本 Skill 帮助用户从零开始撰写学术论文。内置 Microsoft Tech Report 模板作为默认模板，同时支持用户指定任意 LaTeX 模板。
 
 **核心能力：**
-1. 初始化论文项目（scaffold 模板文件）
-2. 按照顶会写作规范（ICLR/ICML/NeurIPS）辅助填写各章节内容
-3. 编译 LaTeX 生成 PDF
+1. 自动检测并引导安装 LaTeX 环境
+2. 初始化论文项目（scaffold 模板文件）
+3. 按照顶会写作规范（ICLR/ICML/NeurIPS）辅助填写各章节内容
+4. 编译 LaTeX 生成 PDF
 
 ---
 
-## 二、初始化流程
+## 二、环境安装
 
-### 2.1 默认模板（Microsoft Tech Report）
+初始化项目前，**必须先检查 LaTeX 环境**。按以下流程执行：
+
+```bash
+# 检查 pdflatex 是否可用
+which pdflatex
+```
+
+如果 `pdflatex` 不存在，根据操作系统**自动执行安装**（需要用户确认）：
+
+### macOS
+```bash
+# 推荐：安装完整版 MacTeX（约 4GB，包含所有宏包）
+brew install --cask mactex
+
+# 安装后刷新 PATH（新终端自动生效）
+eval "$(/usr/libexec/path_helper)"
+
+# 验证
+pdflatex --version
+bibtex --version
+```
+
+如果用户希望轻量安装：
+```bash
+# BasicTeX（约 100MB），需要手动安装缺失宏包
+brew install --cask basictex
+eval "$(/usr/libexec/path_helper)"
+
+# 安装本模板需要的额外宏包
+sudo tlmgr update --self
+sudo tlmgr install collection-fontsrecommended collection-latexrecommended \
+  tcolorbox environ etoolbox pgf xcolor listings algorithm2e ifoddpage \
+  relsize titletoc placeins cleveref microtype booktabs enumitem \
+  mathtools amscls amsmath natbib xstring
+```
+
+### Ubuntu / Debian
+```bash
+sudo apt update
+sudo apt install -y texlive-full
+```
+
+轻量安装：
+```bash
+sudo apt install -y texlive-base texlive-latex-recommended texlive-latex-extra \
+  texlive-fonts-recommended texlive-science texlive-bibtex-extra
+```
+
+### Windows
+提示用户下载安装：
+- **TeX Live**: https://www.tug.org/texlive/
+- **MiKTeX**: https://miktex.org/download
+
+### 验证安装成功
+```bash
+pdflatex --version && bibtex --version && echo "LaTeX environment ready!"
+```
+
+---
+
+## 三、初始化流程
+
+### 3.1 默认模板（Microsoft Tech Report）
 
 当用户要求新建论文项目且未指定模板时：
 
 ```bash
-# 1. 复制模板到目标目录
+# 复制模板到目标目录
 cp -r <SKILL_DIRECTORY>/template/* <目标目录>/
-
-# 2. 检查 LaTeX 环境
-which pdflatex
 ```
 
-如果 `pdflatex` 不可用，提示用户安装：
-- macOS: `brew install --cask mactex`
-- Ubuntu: `sudo apt install texlive-full`
-- Windows: 下载 MiKTeX 或 TeX Live
-
-### 2.2 自定义模板
+### 3.2 自定义模板
 
 当用户提供了模板路径（如 "用 ICLR 模板" 或指定一个目录）：
 
@@ -50,7 +105,7 @@ which pdflatex
 
 ---
 
-## 三、默认模板文件结构
+## 四、默认模板文件结构
 
 ```
 project/
@@ -86,7 +141,7 @@ project/
 
 ---
 
-## 四、`main.tex` 可定制字段
+## 五、`main.tex` 可定制字段
 
 用户需要替换的字段（搜索 `<-- Replace`）：
 
@@ -117,7 +172,7 @@ project/
 
 ---
 
-## 五、写作规范（顶会风格）
+## 六、写作规范（顶会风格）
 
 **这些规范在帮用户写内容时必须严格遵守。**
 
@@ -163,7 +218,7 @@ project/
 
 ---
 
-## 六、可用 LaTeX 环境速查
+## 七、可用 LaTeX 环境速查
 
 ### 6.1 彩色定理框
 
@@ -303,7 +358,7 @@ Under Assumption~1, the algorithm converges at $\mathcal{O}(1/\sqrt{T})$.
 
 ---
 
-## 七、编译
+## 八、编译
 
 ```bash
 pdflatex -interaction=nonstopmode main.tex
@@ -320,13 +375,13 @@ pdflatex -interaction=nonstopmode main.tex
 
 ---
 
-## 八、示例 PDF
+## 九、示例 PDF
 
 完整渲染示例见 `<SKILL_DIRECTORY>/example.pdf`，展示了模板的所有功能。
 
 ---
 
-## 九、工作流程
+## 十、工作流程
 
 当用户请求帮助时，按以下流程操作：
 
@@ -353,7 +408,7 @@ pdflatex -interaction=nonstopmode main.tex
 
 ---
 
-## 十、注意事项
+## 十一、注意事项
 
 1. **不要修改** `microsoft-tech-report.sty`、`fancyhdr.sty`、`figures/microsoft.pdf`
 2. 图片建议放在 `figures/` 目录，使用 PDF/PNG 格式

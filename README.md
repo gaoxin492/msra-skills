@@ -23,7 +23,11 @@ We currently ship three skills, **Server Manager**, **Blob Manager**, and **Vibe
 - Follows top-conference writing conventions (ICLR/ICML/NeurIPS style)
 - Rich environment support: colored theorem boxes, pseudocode (algorithm2e), LLM prompt boxes with JSON, subfigures, booktabs tables
 - Appendix table of contents with toggle switch
+- Automatic LaTeX environment detection and installation guidance
 - Automatic LaTeX compilation (pdflatex + bibtex)
+
+**Server Manager**
+- **Added batch SSH port migration (22 → 2223)**: Step-by-step guide for migrating SSH from port 22 to 2223, including NSG rule management, sshd config, and verification. Required by corporate security policies for public-facing VMs.
 
 ### v1.4.0 (2026-05-01)
 
