@@ -1,0 +1,139 @@
+% === Appendix ===
+\newpage
+\appendix
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\setcounter{section}{0}
+\renewcommand{\thetable}{\Alph{section}\arabic{table}}
+\renewcommand{\thefigure}{\Alph{section}\arabic{figure}}
+\renewcommand{\thesection}{\Alph{section}}
+
+% --- Appendix Table of Contents (toggle via \appendixtoctrue / \appendixtocfalse in main.tex) ---
+\ifappendixtoc
+  \startcontents[appendix]
+  \noindent{\LARGE\bfseries Appendix}
+  \vspace{1.5em}
+  \titlecontents{lsection}[0em]{\large\bfseries\color{msftblue}\vspace{0.8em}}{\thecontentslabel\hspace{0.5em}}{}{\titlerule*[0.5pc]{.}\contentspage}
+  \titlecontents{lsubsection}[2.5em]{\normalsize\color{msftblue}\vspace{0.3em}}{\thecontentslabel\hspace{0.5em}}{}{\titlerule*[0.5pc]{.}\contentspage}
+  \printcontents[appendix]{l}{1}{\setcounter{tocdepth}{2}}
+  \newpage
+\fi
+
+% ============================================================
+%  Appendix A: Additional Results
+% ============================================================
+\section{Additional Results}
+\label{sec:additional_results}
+
+This section provides supplementary experimental results that could not be included in the main paper due to space constraints.
+
+\subsection{Extended Comparison}
+
+% --- Example: additional results table in appendix ---
+\begin{table}[h!]
+  \centering
+  \caption{Extended comparison with additional baselines on [your benchmark].}
+  \label{tab:extended_results}
+  \begin{tabular}{lccc}
+    \toprule
+    Method & Metric A ($\uparrow$) & Metric B ($\downarrow$) & Metric C ($\uparrow$) \\
+    \midrule
+    Baseline D & 72.1 & 0.48 & 65.3 \\
+    Baseline E & 74.8 & 0.44 & 68.7 \\
+    Baseline F & 77.3 & 0.39 & 71.2 \\
+    \midrule
+    \method (Ours) & \textbf{82.1} & \textbf{0.31} & \textbf{76.9} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Additional Visualizations}
+
+% --- Example: appendix figure ---
+\begin{figure}[h!]
+  \centering
+  \fbox{\rule{0pt}{1.5in}\rule{0.9\linewidth}{0pt}}
+  \caption{Additional qualitative results. Replace with your supplementary visualizations.}
+  \label{fig:additional_vis}
+\end{figure}
+
+\subsection{Implementation Details}
+
+Provide additional implementation details here, such as hyperparameter settings, data preprocessing pipelines, or hardware specifications that are too detailed for the main text.
+
+% ============================================================
+%  Appendix B: Prompt Templates
+% ============================================================
+\section{Prompt Templates}
+\label{sec:prompt_templates}
+
+This section documents the prompts used in our pipeline.
+
+\subsection{Evaluation Prompt}
+
+% --- Example: system prompt with natural language ---
+\begin{promptbox}[System Prompt for Evaluation]
+\noindent\textbf{Role:} You are a professional evaluation expert.
+
+\noindent\textbf{Task:} Given an image and a text description, evaluate whether the image faithfully reflects the content described in the text.
+
+\noindent\textbf{Criteria:}
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
+  \item \textbf{Relevance}: Does the image match the text description?
+  \item \textbf{Quality}: Is the image free of artifacts and distortions?
+  \item \textbf{Consistency}: Are all elements spatially coherent?
+\end{itemize}
+
+\noindent\textbf{Output:} Provide a score from 0 to 10 with a brief justification.
+\end{promptbox}
+
+\subsection{Structured Output Prompt}
+
+% --- Example: prompt with JSON output format ---
+\begin{promptbox}[System Prompt with JSON Output]
+\noindent You are given a research paper abstract. Extract the following metadata and return it as a JSON object.
+
+\vspace{0.5em}
+\noindent\textbf{Expected output format:}
+\begin{lstlisting}[style=json]
+{
+  "title": "Paper title",
+  "authors": ["Author One", "Author Two"],
+  "keywords": ["keyword1", "keyword2", "keyword3"],
+  "task_type": "classification | generation | detection",
+  "datasets": [
+    {"name": "ImageNet", "split": "val", "size": 50000}
+  ],
+  "metrics": {
+    "accuracy": 82.1,
+    "f1_score": 0.79
+  }
+}
+\end{lstlisting}
+
+\noindent Return \textbf{only} the JSON object, with no additional text.
+\end{promptbox}
+
+% ============================================================
+%  Appendix C: Theoretical Analysis (optional)
+% ============================================================
+\section{Theoretical Analysis}
+\label{sec:theoretical_analysis}
+
+% This section is optional. Use it when your work involves theoretical contributions.
+% The template supports colored theorem boxes: Theorem (blue), Proposition (green),
+% Lemma (blue), Corollary (green), Definition (yellow), Assumption (yellow), Remark (gray).
+%
+% Usage:  \begin{theorem}{Title}{label}  ...  \end{theorem}
+% Refer:  \cref{thm:label}, \cref{prop:label}, \cref{lem:label}, etc.
+
+\begin{theorem}{Example Theorem}{example}
+Let $f: \mathcal{X} \rightarrow \mathbb{R}$ be an $L$-Lipschitz continuous function. Then for any $x, y \in \mathcal{X}$:
+\begin{equation}
+  |f(x) - f(y)| \leq L \|x - y\|.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Your proof goes here. We omit the details for brevity.
+\end{proof}

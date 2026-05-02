@@ -10,11 +10,20 @@
 
 有了 **msra-skills**，Claude 帮你记住所有集群的别名、凭据和配置，统一管理，不容易搞乱。不用再去记哪个别名对应哪个 job，也不用手动 SSH 进 10 个节点挨个重挂存储。集群多的时候，这对日常研究效率的提升非常明显。
 
-目前包含两个技能，**Server Manager** 和 **Blob Manager**，但这是一个开放、可扩展的插件框架，随时可以加入新的技能（实验追踪、任务调度、日志分析等等）。
+目前包含三个技能，**Server Manager**、**Blob Manager** 和 **Vibe Paper**，但这是一个开放、可扩展的插件框架，随时可以加入新的技能（实验追踪、任务调度、日志分析等等）。
 
 ---
 
 ## 更新日志
+
+### v1.5.0 (2026-05-02)
+
+**Vibe Paper**（新技能）
+- **学术论文写作助手**：内置 Microsoft Tech Report 模板一键初始化 LaTeX 项目，也支持用户自定义模板（ICLR/NeurIPS/CVPR 等）
+- 遵循顶会写作规范（ICLR/ICML/NeurIPS 风格）
+- 丰富的环境支持：彩色定理框、伪代码（algorithm2e）、LLM Prompt 框（含 JSON）、子图、booktabs 表格
+- 附录目录开关（`\appendixtoctrue` / `\appendixtocfalse`）
+- 自动编译（pdflatex + bibtex）
 
 ### v1.4.0 (2026-05-01)
 
@@ -39,7 +48,7 @@ claude plugin marketplace add gaoxin492/msra-skills
 claude plugin install msra-skills
 ```
 
-重启 Claude Code 后就能看到 `msra-skills:server-manager` 和 `msra-skills:blob-manager`。每次启动自动加载，不需要额外参数。
+重启 Claude Code 后就能看到 `msra-skills:server-manager`、`msra-skills:blob-manager` 和 `msra-skills:vibe-paper`。每次启动自动加载，不需要额外参数。
 
 ### 方式二：Git Clone 安装
 
@@ -111,6 +120,8 @@ git pull
 - *"SAS token 过期了，重新挂载 blob"* → 自动生成新 SAS token 并批量重挂载
 - *"上传这个文件到 blob"* → AzCopy 高速传输
 - *"帮我上线一台新服务器"* → 引导式上线流程，部署 tunnel + watchdog
+- *"帮我新建一篇论文"* → 用 Microsoft Tech Report 模板初始化 LaTeX 项目
+- *"帮我写 Introduction"* → 按顶会规范撰写引言
 
 ---
 
@@ -168,6 +179,23 @@ Blob Manager 自动化了整个续期流程：
 
 > 💡 更多技能持续开发中，欢迎贡献！
 
+### Vibe Paper — 学术论文写作助手
+
+内置 Microsoft Tech Report 模板的学术论文写作助手。
+
+写论文涉及大量 LaTeX 样板工作：搭建文档结构、配置定理环境、调整浮动体位置、格式化参考文献等等。Vibe Paper 帮你处理所有这些，让你专注于内容本身。
+
+| 功能 | 说明 |
+|------|------|
+| 模板初始化 | 一条命令创建完整的 Microsoft Tech Report 项目 |
+| 自定义模板 | 指定任意 LaTeX 模板（ICLR、NeurIPS、CVPR），Claude 自动适配 |
+| 写作规范 | 遵循 ICLR/ICML/NeurIPS 风格：浮动体位置、引用格式、章节结构 |
+| 丰富环境 | 彩色定理框、algorithm2e 伪代码、LLM Prompt 框、JSON 代码块 |
+| 附录目录 | 可选的附录目录页，通过 `\appendixtoctrue/false` 开关控制 |
+| 自动编译 | pdflatex + bibtex 自动编译并检查错误 |
+
+示例 PDF 见 `skills/vibe-paper/example.pdf`。
+
 ---
 
 ## 首次配置
@@ -214,6 +242,10 @@ msra-skills/
 │   └── blob-manager/
 │       ├── SKILL.md             # 技能文档和 Claude 指令
 │       └── scripts/             # BlobFuse 重挂载脚本
+│   └── vibe-paper/
+│       ├── SKILL.md             # 技能文档和 Claude 指令
+│       ├── example.pdf          # 渲染示例 PDF
+│       └── template/            # Microsoft Tech Report LaTeX 模板
 ├── README.md                    # 英文版
 ├── README_CN.md                 # 中文版（本文件）
 └── .gitignore

@@ -1,0 +1,68 @@
+% === Method ===
+\section{Method}
+\label{sec:method}
+
+In this section, we describe our proposed method. We first formulate the problem in \cref{sec:formulation}, then present the overall architecture in \cref{sec:architecture}, and finally describe the training procedure in \cref{sec:training}.
+
+% --- Example: how to include a figure ---
+\begin{figure}[t]
+  \centering
+  \fbox{\rule{0pt}{2in}\rule{0.9\linewidth}{0pt}}  % placeholder box; replace with:
+  % \includegraphics[width=\linewidth]{figures/your_figure.pdf}
+  \caption{Overview of the proposed \method framework. Replace this placeholder with your method pipeline figure.}
+  \label{fig:method_overview}
+\end{figure}
+
+% --- Example: how to write an equation ---
+\subsection{Problem Formulation}
+\label{sec:formulation}
+
+Given a dataset $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{N}$, where $x_i$ denotes the input and $y_i$ denotes the label, our goal is to learn a mapping $f: \mathcal{X} \rightarrow \mathcal{Y}$ that minimizes the expected loss:
+\begin{equation}
+  \mathcal{L} = \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \ell\bigl(f(x; \theta),\, y\bigr) \right]
+  \label{eq:objective}
+\end{equation}
+where $\theta$ denotes the model parameters and $\ell(\cdot, \cdot)$ is the loss function. We refer to \cref{eq:objective} as the training objective throughout this paper.
+
+% --- Example: multi-line equation with a SINGLE number ---
+% Use "aligned" inside "equation" for one number; use "align" for per-line numbers.
+\begin{equation}
+  \begin{aligned}
+    \nabla_\theta \mathcal{L}
+    &= \frac{1}{N} \sum_{i=1}^{N} \nabla_\theta \ell\bigl(f(x_i; \theta),\, y_i\bigr) \\
+    &\approx \frac{1}{|\mathcal{B}|} \sum_{i \in \mathcal{B}} \nabla_\theta \ell\bigl(f(x_i; \theta),\, y_i\bigr),
+  \end{aligned}
+  \label{eq:gradient}
+\end{equation}
+where $\mathcal{B}$ denotes a mini-batch sampled from $\mathcal{D}$.
+
+\subsection{Architecture}
+\label{sec:architecture}
+
+Describe the architecture of your model here. Explain each component and how they interact with each other.
+
+% --- Example: pseudocode ---
+\begin{algorithm}[t]
+  \caption{Training Procedure of \method}
+  \label{alg:training}
+  \KwIn{Dataset $\mathcal{D}$, learning rate $\eta$, number of epochs $T$}
+  \KwOut{Trained model parameters $\theta$}
+  Initialize $\theta$ randomly\;
+  \For{$t = 1$ \KwTo $T$}{
+    Sample mini-batch $\mathcal{B} \subset \mathcal{D}$\;
+    Compute loss $\mathcal{L}(\theta; \mathcal{B})$ via \cref{eq:objective}\;
+    Compute gradient $g \leftarrow \nabla_\theta \mathcal{L}$\;
+    Update $\theta \leftarrow \theta - \eta \cdot g$\;
+    \If{convergence criterion met}{
+      \textbf{break}\;
+    }
+  }
+  \Return{$\theta$}
+\end{algorithm}
+
+The training procedure of \method is summarized in \cref{alg:training}.
+
+\subsection{Training Procedure}
+\label{sec:training}
+
+Describe how the model is trained, including the optimizer, learning rate schedule, data augmentation, and any other relevant details.

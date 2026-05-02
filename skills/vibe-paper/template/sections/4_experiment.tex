@@ -1,0 +1,79 @@
+% === Experiments ===
+\section{Experiments}
+\label{sec:experiments}
+
+We evaluate \method on [your benchmarks] and compare against state-of-the-art baselines. We first describe the experimental setup in \cref{sec:setup}, then present the main results in \cref{sec:main_results}, and finally provide ablation studies in \cref{sec:ablation}.
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+\noindent\textbf{Datasets.} Describe the datasets used for evaluation, including their size, splits, and any preprocessing steps.
+
+\noindent\textbf{Baselines.} List the baseline methods you compare against and briefly describe their key characteristics.
+
+\noindent\textbf{Implementation Details.} Provide training details such as batch size, learning rate, number of epochs, hardware, and framework used.
+
+\subsection{Main Results}
+\label{sec:main_results}
+
+% --- Example: how to include a table ---
+\begin{table}[t]
+  \centering
+  \caption{Main results on [your benchmark]. Best results are in \textbf{bold}. Replace with your own results.}
+  \label{tab:main_results}
+  \begin{tabular}{lcc}
+    \toprule
+    Method & Metric A ($\uparrow$) & Metric B ($\downarrow$) \\
+    \midrule
+    Baseline A & 75.3 & 0.42 \\
+    Baseline B & 78.6 & 0.38 \\
+    Baseline C & 80.2 & 0.35 \\
+    \midrule
+    \method (Ours) & \textbf{82.1} & \textbf{0.31} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+As shown in \cref{tab:main_results}, our method outperforms all baselines on both metrics. Specifically, \method achieves a Metric A score of 82.1, surpassing the best baseline by 1.9 points.
+
+% --- Example: how to include subfigures ---
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.48\linewidth}
+    \centering
+    \fbox{\rule{0pt}{1.2in}\rule{0.8\linewidth}{0pt}}
+    \caption{Qualitative result A}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\linewidth}
+    \centering
+    \fbox{\rule{0pt}{1.2in}\rule{0.8\linewidth}{0pt}}
+    \caption{Qualitative result B}
+  \end{subfigure}
+  \caption{Qualitative comparison. Replace with your visualization results.}
+  \label{fig:qualitative}
+\end{figure}
+
+\cref{fig:qualitative} shows qualitative comparisons between our method and baselines. Our method produces more [accurate/realistic/consistent] results.
+
+\subsection{Ablation Study}
+\label{sec:ablation}
+
+% --- Example: ablation table ---
+\begin{table}[h!]
+  \centering
+  \caption{Ablation study on key components of \method.}
+  \label{tab:ablation}
+  \begin{tabular}{ccc}
+    \toprule
+    Component A & Component B & Metric A ($\uparrow$) \\
+    \midrule
+                &             & 75.3 \\
+    \checkmark  &             & 79.4 \\
+                & \checkmark  & 78.1 \\
+    \checkmark  & \checkmark  & \textbf{82.1} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+We conduct ablation experiments to validate the effectiveness of each component, as shown in \cref{tab:ablation}. Both components contribute to the final performance.

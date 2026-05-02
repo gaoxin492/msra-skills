@@ -10,11 +10,20 @@ Managing multiple clusters at MSRA involves a lot of tedious, repetitive work: l
 
 With **msra-skills**, Claude keeps track of all your clusters, credentials, and configurations in one place. You don't need to remember which alias maps to which job, or manually SSH into 10 nodes to remount storage. When you have many clusters, this makes a real difference in day-to-day research efficiency.
 
-We currently ship two skills, **Server Manager** and **Blob Manager**, but this is an open and extensible plugin. New skills can be added anytime as needs emerge (experiment tracking, job scheduling, log analysis, etc.).
+We currently ship three skills, **Server Manager**, **Blob Manager**, and **Vibe Paper**, but this is an open and extensible plugin. New skills can be added anytime as needs emerge (experiment tracking, job scheduling, log analysis, etc.).
 
 ---
 
 ## Changelog
+
+### v1.5.0 (2026-05-02)
+
+**Vibe Paper** (New Skill)
+- **Academic paper writing assistant**: Scaffold LaTeX projects from a built-in Microsoft Tech Report template, or bring your own template (ICLR/NeurIPS/CVPR etc.)
+- Follows top-conference writing conventions (ICLR/ICML/NeurIPS style)
+- Rich environment support: colored theorem boxes, pseudocode (algorithm2e), LLM prompt boxes with JSON, subfigures, booktabs tables
+- Appendix table of contents with toggle switch
+- Automatic LaTeX compilation (pdflatex + bibtex)
 
 ### v1.4.0 (2026-05-01)
 
@@ -39,7 +48,7 @@ claude plugin marketplace add gaoxin492/msra-skills
 claude plugin install msra-skills
 ```
 
-Restart Claude Code and you'll see `msra-skills:server-manager` and `msra-skills:blob-manager`. No extra flags needed on every launch.
+Restart Claude Code and you'll see `msra-skills:server-manager`, `msra-skills:blob-manager`, and `msra-skills:vibe-paper`. No extra flags needed on every launch.
 
 ### Method 2: Git Clone
 
@@ -111,6 +120,8 @@ Once installed, just talk to Claude naturally. The right skill activates automat
 - *"SAS token 过期了，重新挂载 blob"* → Auto-generate a new SAS token and batch remount
 - *"上传这个文件到 blob"* → AzCopy high-speed transfer
 - *"帮我上线一台新服务器"* → Guided onboarding with tunnel deployment
+- *"帮我新建一篇论文"* → Scaffold a LaTeX project from the Microsoft Tech Report template
+- *"帮我写 Introduction"* → Draft an introduction following top-conference conventions
 
 ---
 
@@ -168,6 +179,23 @@ For file transfers between your local machine and Blob storage, it supports:
 
 > 💡 More skills coming. Contributions welcome!
 
+### Vibe Paper
+
+Academic paper writing assistant with a built-in Microsoft Tech Report template.
+
+Writing a paper involves lots of LaTeX boilerplate: setting up the document structure, configuring theorem environments, getting float placement right, formatting references, etc. Vibe Paper handles all of this so you can focus on the content.
+
+| Feature | Details |
+|---------|---------|
+| Template Scaffold | One command to create a full project with Microsoft Tech Report styling |
+| Custom Templates | Point to any LaTeX template (ICLR, NeurIPS, CVPR) and Claude adapts automatically |
+| Writing Conventions | Follows ICLR/ICML/NeurIPS style: proper float placement, citation style, section structure |
+| Rich Environments | Colored theorem boxes, algorithm2e pseudocode, LLM prompt boxes, JSON listings |
+| Appendix TOC | Optional table of contents for appendix, toggled via `\appendixtoctrue/false` |
+| Compilation | Automated pdflatex + bibtex cycle with error checking |
+
+An example PDF showcasing all features is included at `skills/vibe-paper/example.pdf`.
+
 ---
 
 ## First-Time Setup
@@ -214,6 +242,10 @@ msra-skills/
 │   └── blob-manager/
 │       ├── SKILL.md             # Skill docs & Claude instructions
 │       └── scripts/             # BlobFuse remount scripts
+│   └── vibe-paper/
+│       ├── SKILL.md             # Skill docs & Claude instructions
+│       ├── example.pdf          # Rendered example PDF
+│       └── template/            # Microsoft Tech Report LaTeX template
 ├── README.md                    # English
 ├── README_CN.md                 # 中文
 └── .gitignore
