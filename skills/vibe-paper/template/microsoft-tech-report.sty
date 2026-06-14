@@ -1,5 +1,72 @@
+%% Copyright (C) 2026 Weijie Wang
+%%
+%% This file is part of the microsoft-tech-report package.
+%%
+%% Source repository:
+%%   https://github.com/lhmd/microsoft-tech-report
+%%
+%% Author:   Weijie Wang (http://lhmd.top)
+%% Maintainer: Weijie Wang
+%%
+%% -------------------------------------------------------------------------
+%% This work may be distributed and/or modified under the conditions of the
+%% LaTeX Project Public License, either version 1.3c of this license or
+%% (at your option) any later version. The latest version of this license
+%% is in:
+%%
+%%     https://www.latex-project.org/lppl.txt
+%%
+%% and version 1.3c or later is part of all distributions of LaTeX version
+%% 2008-05-04 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%% The Current Maintainer of this work is Weijie Wang.
+%%
+%% This work consists of the file microsoft-tech-report.sty.
+%% -------------------------------------------------------------------------
+%%
+%% This is an unofficial template. It is not affiliated with, endorsed by, or
+%% sponsored by Microsoft.
+%%
+%% If you use this style file in your work, please give appropriate credit to
+%% the original author, e.g.:
+%%     Template/style by Weijie Wang
+%%     https://github.com/lhmd/microsoft-tech-report
+%% -------------------------------------------------------------------------
+%%
+%% NOTICE — MODIFIED VERSION
+%% -------------------------------------------------------------------------
+%% This file is a MODIFIED version of microsoft-tech-report.sty, distributed
+%% as part of the msra-skills (vibe-paper) plugin:
+%%     https://github.com/gaoxin492/msra-skills
+%% Modifications by: gaoxin492 (2026)
+%%
+%% Per LPPL 1.3c, this derived work is distributed under the same license as
+%% the original. The Current Maintainer of the ORIGINAL work remains
+%% Weijie Wang; the Current Maintainer of THIS MODIFIED FILE is gaoxin492.
+%%
+%% Summary of modifications relative to the upstream version
+%% (https://github.com/lhmd/microsoft-tech-report):
+%%   * Renamed color palette and font-command namespace from `microsoft*`
+%%     to `msft*` (e.g. \microsoftsans -> \msftsans, microsoftblue ->
+%%     msftblue, microsofttitlebox -> msfttitlebox, microsoftcustom
+%%     caption format -> custom).
+%%   * Default report label changed from "Technical Report" to
+%%     "Microsoft Research".
+%%   * Brand mark hard-wired to `figures/microsoft.pdf` via \msftbrandmark.
+%%   * Title box padding tweaked (left/right/top/bottom = 0.6cm, after
+%%     skip = 1.2em).
+%%   * Removed several upstream helpers that this plugin does not use:
+%%     \techreportmonthyear, \techreportlogo, \techreportlogos,
+%%     \techreportdate, \techreporttoprule, \techreporttitle,
+%%     \techreportauthors, \techreportmeta, \techreportplaceholder,
+%%     \techreportbrandmark, \techreportlogoheight, and the etoolbox
+%%     dependency.
+%%   * Added \msftdivider and a \highlight command using msftaccent.
+%% -------------------------------------------------------------------------
+
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{microsoft-tech-report}[2026/04/24 Modern MSR tech report style]
+\ProvidesPackage{microsoft-tech-report}[2026/04/24 Modern MSR tech report style (modified by gaoxin492; original by Weijie Wang, LPPL 1.3c)]
 
 % --------------------------------------------------
 % Packages

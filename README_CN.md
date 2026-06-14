@@ -200,6 +200,16 @@ Blob Manager 自动化了整个续期流程：
 
 示例 PDF 见 `skills/vibe-paper/example.pdf`。
 
+> **模板出处声明。** `skills/vibe-paper/template/microsoft-tech-report.sty`
+> 是 Weijie Wang 所作 `microsoft-tech-report` 模板的 **修改版**
+> （原仓库：[https://github.com/lhmd/microsoft-tech-report](https://github.com/lhmd/microsoft-tech-report)），
+> 以 LaTeX Project Public License (LPPL) 1.3c 协议分发。完整版权声明与
+> 我们所做的修改清单见该 `.sty` 文件头部。随附的 `fancyhdr.sty`
+> 是 Pieter van Oostrum 的原版包（LPPL）。本模板为非官方模板，
+> 与 Microsoft 无任何官方关联，亦未获其背书或赞助。
+>
+> *Template/style originally by Weijie Wang: [https://github.com/lhmd/microsoft-tech-report](https://github.com/lhmd/microsoft-tech-report)*
+
 ---
 
 ## 首次配置

@@ -200,6 +200,18 @@ Writing a paper involves lots of LaTeX boilerplate: setting up the document stru
 
 An example PDF showcasing all features is included at `skills/vibe-paper/example.pdf`.
 
+> **Template attribution.** The Microsoft Tech Report LaTeX style shipped under
+> `skills/vibe-paper/template/microsoft-tech-report.sty` is a **modified version**
+> of the `microsoft-tech-report` package by Weijie Wang
+> ([https://github.com/lhmd/microsoft-tech-report](https://github.com/lhmd/microsoft-tech-report)),
+> distributed under the LaTeX Project Public License (LPPL) 1.3c. See the
+> header of the `.sty` file for the full notice and a summary of our
+> modifications. The bundled `fancyhdr.sty` is the upstream package by
+> Pieter van Oostrum (LPPL). This is an unofficial template and is not
+> affiliated with, endorsed by, or sponsored by Microsoft.
+>
+> *Template/style originally by Weijie Wang: [https://github.com/lhmd/microsoft-tech-report](https://github.com/lhmd/microsoft-tech-report)*
+
 ---
 
 ## First-Time Setup
